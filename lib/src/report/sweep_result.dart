@@ -2,14 +2,30 @@ import '../detection/arb_analyzer.dart';
 import '../detection/overflow_detector.dart';
 import '../runner/sweep_variant.dart';
 
+/// The result of running a single sweep variant.
 class SweepResult {
+  /// The name of the flow that was tested.
   final String flowName;
+
+  /// The locale/scale/viewport combination that was tested.
   final SweepVariant variant;
+
+  /// Whether this variant passed all checks.
   final bool passed;
+
+  /// Any RenderFlex overflow errors captured during the test.
   final List<OverflowError> overflows;
+
+  /// Any ARB translation issues for this variant's locale.
   final List<ArbIssue> arbIssues;
+
+  /// Path to the golden screenshot file, if captured.
   final String? screenshotPath;
+
+  /// Error message if the test threw an exception.
   final String? errorMessage;
+
+  /// Wall-clock time for this variant's test.
   final Duration duration;
 
   const SweepResult({
@@ -23,10 +39,16 @@ class SweepResult {
     this.duration = Duration.zero,
   });
 
+  /// Whether any overflow errors were captured.
   bool get hasOverflows => overflows.isNotEmpty;
+
+  /// Whether any ARB issues exist for this variant's locale.
   bool get hasArbIssues => arbIssues.isNotEmpty;
+
+  /// Whether this variant has any issues at all.
   bool get hasIssues => hasOverflows || hasArbIssues || !passed;
 
+  /// Serializes this result to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
     'flow': flowName,
     'variant': variant.label,
@@ -43,8 +65,12 @@ class SweepResult {
   };
 }
 
+/// Aggregates [SweepResult]s with summary statistics.
 class SweepRunSummary {
+  /// All results in this run.
   final List<SweepResult> results;
+
+  /// When this summary was created.
   final DateTime timestamp;
 
   SweepRunSummary({required this.results}) : timestamp = DateTime.now();

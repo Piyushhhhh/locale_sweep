@@ -3,7 +3,12 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+/// Static analyzer for ARB (Application Resource Bundle) translation files.
+///
+/// Detects missing keys and placeholder mismatches by comparing target locale
+/// ARB files against the base locale.
 class ArbAnalyzer {
+  /// Analyzes ARB files in [arbDir] for missing keys and placeholder issues.
   static ArbReport analyze({
     required String arbDir,
     List<String> locales = const ['en', 'de', 'ar', 'ja'],
@@ -127,16 +132,22 @@ class ArbAnalyzer {
   }
 }
 
+/// Result of an ARB analysis containing all detected issues.
 class ArbReport {
+  /// All issues found across all analyzed locales.
   final List<ArbIssue> issues;
 
+  /// Creates an ARB report.
   const ArbReport({this.issues = const []});
 
+  /// Whether any issues were detected.
   bool get hasIssues => issues.isNotEmpty;
 
+  /// Returns issues for a specific [locale].
   List<ArbIssue> issuesForLocale(String locale) =>
       issues.where((i) => i.locale == locale).toList();
 
+  /// Groups issues by locale.
   Map<String, List<ArbIssue>> get byLocale {
     final map = <String, List<ArbIssue>>{};
     for (final issue in issues) {
@@ -146,12 +157,30 @@ class ArbReport {
   }
 }
 
-enum ArbIssueType { missingFile, missingKey, placeholderMismatch }
+/// The type of issue found during ARB analysis.
+enum ArbIssueType {
+  /// An expected ARB file was not found.
+  missingFile,
 
+  /// A key present in the base locale is missing in the target locale.
+  missingKey,
+
+  /// A placeholder (e.g. `{count}`) is in the base but missing in the target.
+  placeholderMismatch,
+}
+
+/// A single issue found during ARB analysis.
 class ArbIssue {
+  /// The category of this issue.
   final ArbIssueType type;
+
+  /// The locale where this issue was found.
   final String locale;
+
+  /// The ARB key involved, if applicable.
   final String? key;
+
+  /// Human-readable description of the issue.
   final String detail;
 
   const ArbIssue({

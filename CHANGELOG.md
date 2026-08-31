@@ -1,3 +1,9 @@
+## 0.1.1
+
+- Add dartdoc comments to all public API elements.
+- Add `example/example.dart` for pub.dev example tab.
+- Real-world validation: tested against Spotube (48k stars) and wger (960 stars).
+
 ## 0.1.0
 
 - Initial release.

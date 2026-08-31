@@ -2,9 +2,15 @@ import 'dart:ui';
 
 import '../config/viewport_preset.dart';
 
+/// A single combination of locale, text scale, and viewport to test.
 class SweepVariant {
+  /// BCP-47 locale code.
   final String locale;
+
+  /// Text scale factor (1.0 = default, 2.0 = large accessibility).
   final double textScale;
+
+  /// Viewport dimensions.
   final ViewportPreset viewport;
 
   const SweepVariant({
@@ -13,6 +19,7 @@ class SweepVariant {
     required this.viewport,
   });
 
+  /// Whether this locale uses right-to-left text direction.
   bool get isRtl => locale == 'ar' || locale == 'he' || locale == 'fa';
 
   TextDirection get textDirection =>
@@ -33,6 +40,7 @@ class SweepVariant {
     return parts.join(' · ');
   }
 
+  /// Returns the golden file path for this variant and flow.
   String screenshotPath(String flowName) =>
       '${flowName}_$label.png'.replaceAll(' ', '_');
 }

@@ -4,12 +4,24 @@ import 'package:yaml/yaml.dart';
 
 import 'viewport_preset.dart';
 
+/// Configuration for a sweep run, loadable from `locale_sweep.yaml`.
 class SweepConfig {
+  /// BCP-47 locale codes to test (e.g. `['en', 'de', 'ar']`).
   final List<String> locales;
+
+  /// Text scale factors to test (e.g. `[1.0, 2.0]`).
   final List<double> textScales;
+
+  /// Viewport sizes to render at.
   final List<ViewportPreset> viewports;
+
+  /// Directory for golden screenshots.
   final String screenshotDir;
+
+  /// Directory for generated reports.
   final String reportDir;
+
+  /// Path to ARB files for static translation analysis.
   final String? arbDir;
 
   const SweepConfig({
@@ -21,6 +33,7 @@ class SweepConfig {
     this.arbDir,
   });
 
+  /// Loads configuration from a YAML file, falling back to defaults.
   static SweepConfig load([String path = 'locale_sweep.yaml']) {
     final file = File(path);
     if (!file.existsSync()) return const SweepConfig();

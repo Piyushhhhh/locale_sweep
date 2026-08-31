@@ -6,9 +6,15 @@ import 'package:http/http.dart' as http;
 import 'report_generator.dart';
 import 'sweep_result.dart';
 
+/// Posts or updates LocaleSweep results as a GitHub PR comment.
 class GitHubReporter {
+  /// GitHub API token.
   final String token;
+
+  /// Repository in `owner/repo` format.
   final String repo;
+
+  /// PR number to comment on.
   final int prNumber;
 
   const GitHubReporter({
@@ -17,6 +23,7 @@ class GitHubReporter {
     required this.prNumber,
   });
 
+  /// Creates a reporter from `GITHUB_TOKEN`, `GITHUB_REPOSITORY`, and `GITHUB_REF`.
   factory GitHubReporter.fromEnv() {
     final token = Platform.environment['GITHUB_TOKEN'];
     final repo = Platform.environment['GITHUB_REPOSITORY'];
@@ -41,6 +48,7 @@ class GitHubReporter {
     );
   }
 
+  /// Posts or updates a PR comment with the sweep results.
   Future<void> postComment(SweepRunSummary summary) async {
     final markdown = ReportGenerator.generateMarkdown(summary);
     final commentBody =

@@ -1,19 +1,27 @@
 import 'package:flutter/foundation.dart';
 
+/// Intercepts [FlutterError.onError] to capture RenderFlex overflow errors.
+///
+/// Call [install] before pumping a widget and [uninstall] after the test.
+/// Non-overflow errors are forwarded to the previous handler.
 class OverflowDetector {
+  /// Captured overflow errors since [install] was called.
   final List<OverflowError> errors = [];
   FlutterExceptionHandler? _previousHandler;
 
+  /// Hooks into [FlutterError.onError] to capture overflows.
   void install() {
     _previousHandler = FlutterError.onError;
     FlutterError.onError = _handleError;
   }
 
+  /// Restores the previous [FlutterError.onError] handler.
   void uninstall() {
     FlutterError.onError = _previousHandler;
     _previousHandler = null;
   }
 
+  /// Clears captured errors.
   void reset() => errors.clear();
 
   void _handleError(FlutterErrorDetails details) {
@@ -44,9 +52,15 @@ class OverflowDetector {
   }
 }
 
+/// A captured RenderFlex overflow error with optional pixel count.
 class OverflowError {
+  /// The full Flutter error message.
   final String message;
+
+  /// The widget context where the overflow occurred, if available.
   final String? widget;
+
+  /// The number of pixels that overflowed, parsed from the error message.
   final double? pixels;
 
   const OverflowError({required this.message, this.widget, this.pixels});

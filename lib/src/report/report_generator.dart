@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'sweep_result.dart';
 
+/// Generates Markdown and JSON reports from sweep results.
 class ReportGenerator {
+  /// Generates a Markdown report with failure table and locale summary.
   static String generateMarkdown(SweepRunSummary summary) {
     final buf = StringBuffer();
 
@@ -90,6 +92,7 @@ class ReportGenerator {
     return buf.toString();
   }
 
+  /// Generates a machine-readable JSON report.
   static String generateJson(SweepRunSummary summary) {
     final data = {
       'timestamp': summary.timestamp.toIso8601String(),

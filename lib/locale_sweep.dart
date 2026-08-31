@@ -1,3 +1,9 @@
+/// Localization release QA for Flutter.
+///
+/// Runs app flows across every locale, viewport size, text scale, and
+/// RTL mode, then reports broken screens with screenshot proof.
+library;
+
 export 'src/config/sweep_config.dart';
 export 'src/config/viewport_preset.dart';
 export 'src/runner/sweep_test.dart';

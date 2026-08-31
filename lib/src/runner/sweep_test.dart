@@ -12,12 +12,21 @@ import 'sweep_variant.dart';
 
 final _allResults = <SweepResult>[];
 
+/// Returns all results recorded by [sweepTest] in this isolate.
 List<SweepResult> get sweepResults => List.unmodifiable(_allResults);
 
+/// Clears all recorded sweep results.
 void clearSweepResults() => _allResults.clear();
 
+/// Callback for interactions to run after the widget is pumped.
 typedef SweepBody = Future<void> Function(WidgetTester tester);
 
+/// Generates `locales × textScales × viewports` test cases for [flowName].
+///
+/// Each combination is run as a separate `testWidgets`, wrapped in
+/// [Directionality] and [MediaQuery] to simulate the target environment.
+/// Overflow errors are captured and fail the variant after the result
+/// is recorded (so screenshots exist before failure).
 void sweepTest(
   String flowName, {
   required Widget Function() builder,
