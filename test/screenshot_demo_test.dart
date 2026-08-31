@@ -17,104 +17,10 @@ void main() {
       builder: () => MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorSchemeSeed: const Color(0xFF6750A4),
-          useMaterial3: true,
+          brightness: Brightness.dark,
           fontFamily: 'Roboto',
         ),
-        home: Scaffold(
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 32),
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6750A4),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(
-                      Icons.translate,
-                      color: Colors.white,
-                      size: 32,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'LocaleSweep',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Localization QA for Flutter',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  _FeatureCard(
-                    icon: Icons.language,
-                    color: const Color(0xFF6750A4),
-                    title: 'Missing Translation Keys',
-                    subtitle:
-                        'Detects keys present in English but missing in German, Arabic, or Japanese ARB files.',
-                  ),
-                  const SizedBox(height: 12),
-                  _FeatureCard(
-                    icon: Icons.format_size,
-                    color: const Color(0xFF0061A4),
-                    title: 'Text Overflow at 2x Scale',
-                    subtitle:
-                        'Catches layouts that break when accessibility text scaling is enabled by users.',
-                  ),
-                  const SizedBox(height: 12),
-                  _FeatureCard(
-                    icon: Icons.swap_horiz,
-                    color: const Color(0xFF7D5260),
-                    title: 'RTL Layout Verification',
-                    subtitle:
-                        'Renders Arabic and Hebrew in right-to-left mode to catch directional layout bugs.',
-                  ),
-                  const SizedBox(height: 12),
-                  _FeatureCard(
-                    icon: Icons.screenshot_monitor,
-                    color: const Color(0xFF006C4C),
-                    title: 'Golden Screenshot Proof',
-                    subtitle:
-                        'Captures a screenshot of every variant before failing, so you can see exactly what broke.',
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: FilledButton(
-                      onPressed: () {},
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF6750A4),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: const Text(
-                        'Get Started',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ),
-        ),
+        home: const _OnboardingScreen(),
       ),
       locales: ['en', 'de', 'ar', 'ja'],
       textScales: [1.0, 2.0],
@@ -130,84 +36,11 @@ void main() {
       builder: () => MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorSchemeSeed: const Color(0xFF6750A4),
-          useMaterial3: true,
+          brightness: Brightness.light,
           fontFamily: 'Roboto',
+          scaffoldBackgroundColor: const Color(0xFFF6F7FB),
         ),
-        home: Scaffold(
-          appBar: AppBar(
-            title: const Text('Settings'),
-            centerTitle: false,
-          ),
-          body: ListView(
-            children: [
-              _SettingsSection(
-                title: 'General',
-                children: [
-                  _SettingsTile(
-                    icon: Icons.language,
-                    iconColor: const Color(0xFF6750A4),
-                    title: 'Language & Region',
-                    value: 'English (US)',
-                  ),
-                  _SettingsTile(
-                    icon: Icons.dark_mode,
-                    iconColor: const Color(0xFF0061A4),
-                    title: 'Appearance',
-                    value: 'System default',
-                  ),
-                  _SettingsTile(
-                    icon: Icons.text_fields,
-                    iconColor: const Color(0xFF7D5260),
-                    title: 'Text Size',
-                    value: 'Medium',
-                  ),
-                ],
-              ),
-              _SettingsSection(
-                title: 'Notifications',
-                children: [
-                  _SettingsTile(
-                    icon: Icons.notifications_active,
-                    iconColor: const Color(0xFFB3261E),
-                    title: 'Push Notifications',
-                    value: 'Enabled',
-                  ),
-                  _SettingsTile(
-                    icon: Icons.email_outlined,
-                    iconColor: const Color(0xFF006C4C),
-                    title: 'Email Digests',
-                    value: 'Weekly summary',
-                  ),
-                ],
-              ),
-              _SettingsSection(
-                title: 'Account',
-                children: [
-                  _SettingsTile(
-                    icon: Icons.security,
-                    iconColor: const Color(0xFF006C4C),
-                    title: 'Privacy & Security',
-                    value: '2FA enabled',
-                  ),
-                  _SettingsTile(
-                    icon: Icons.storage,
-                    iconColor: const Color(0xFF0061A4),
-                    title: 'Storage & Cache',
-                    value: '248 MB used',
-                  ),
-                  _SettingsTile(
-                    icon: Icons.info_outline,
-                    iconColor: Colors.grey,
-                    title: 'About',
-                    value: 'Version 0.1.1',
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
+        home: const _SettingsScreen(),
       ),
       locales: ['en', 'de', 'ar', 'ja'],
       textScales: [1.0, 2.0],
@@ -218,17 +51,200 @@ void main() {
   });
 }
 
-class _FeatureCard extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
+// ─── Onboarding ────────────────────────────────────────────────────────────
 
-  const _FeatureCard({
+class _OnboardingScreen extends StatelessWidget {
+  const _OnboardingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0D0D1A),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Hero gradient header
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF6C3CE1), Color(0xFF3B82F6)],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40),
+                ),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 32, 28, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(40),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withAlpha(50),
+                              ),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.translate_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(25),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'v0.1.1',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withAlpha(180),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'LocaleSweep',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.8,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Catch broken translations\nbefore your users do.',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.white.withAlpha(190),
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Features list
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+              child: Column(
+                children: [
+                  _FeatureRow(
+                    gradient: const [Color(0xFF7C3AED), Color(0xFF9333EA)],
+                    icon: Icons.language_rounded,
+                    title: 'Missing Keys',
+                    desc: 'Finds absent ARB keys in target locales',
+                  ),
+                  const SizedBox(height: 10),
+                  _FeatureRow(
+                    gradient: const [Color(0xFF2563EB), Color(0xFF3B82F6)],
+                    icon: Icons.format_size_rounded,
+                    title: 'Overflow Detection',
+                    desc: 'Catches broken layouts at 2x text scale',
+                  ),
+                  const SizedBox(height: 10),
+                  _FeatureRow(
+                    gradient: const [Color(0xFFDB2777), Color(0xFFF472B6)],
+                    icon: Icons.swap_horiz_rounded,
+                    title: 'RTL Verification',
+                    desc: 'Auto-flips layout for Arabic, Hebrew, Farsi',
+                  ),
+                  const SizedBox(height: 10),
+                  _FeatureRow(
+                    gradient: const [Color(0xFF059669), Color(0xFF34D399)],
+                    icon: Icons.camera_alt_rounded,
+                    title: 'Golden Screenshots',
+                    desc: 'Pixel-level proof for every variant',
+                  ),
+                  const SizedBox(height: 22),
+
+                  // CTA button
+                  Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6C3CE1), Color(0xFF3B82F6)],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6C3CE1).withAlpha(80),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Get Started',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'pub.dev/packages/locale_sweep',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withAlpha(90),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _FeatureRow extends StatelessWidget {
+  final List<Color> gradient;
+  final IconData icon;
+  final String title;
+  final String desc;
+
+  const _FeatureRow({
+    required this.gradient,
     required this.icon,
-    required this.color,
     required this.title,
-    required this.subtitle,
+    required this.desc,
   });
 
   @override
@@ -236,23 +252,33 @@ class _FeatureCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withAlpha(20),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withAlpha(40)),
+        color: const Color(0xFF161628),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withAlpha(15)),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              color: color.withAlpha(30),
-              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: gradient,
+              ),
+              borderRadius: BorderRadius.circular(13),
+              boxShadow: [
+                BoxShadow(
+                  color: gradient[0].withAlpha(60),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: Colors.white, size: 22),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,16 +286,17 @@ class _FeatureCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
-                  subtitle,
+                  desc,
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
+                    fontSize: 13,
+                    color: Colors.white.withAlpha(120),
                     height: 1.3,
                   ),
                 ),
@@ -282,69 +309,503 @@ class _FeatureCard extends StatelessWidget {
   }
 }
 
-class _SettingsSection extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
+// ─── Settings ──────────────────────────────────────────────────────────────
 
-  const _SettingsSection({required this.title, required this.children});
+class _SettingsScreen extends StatelessWidget {
+  const _SettingsScreen();
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.primary,
-              letterSpacing: 0.5,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F7FB),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          children: [
+            const SizedBox(height: 20),
+            // Header
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF6C3CE1), Color(0xFF3B82F6)],
+                    ),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: const Icon(
+                    Icons.translate_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Configuration',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1A1A2E),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      Text(
+                        'locale_sweep.yaml',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF8E8EA0),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
+
+            const SizedBox(height: 24),
+
+            // Locales card
+            _SectionCard(
+              children: [
+                _SectionHeader(
+                  title: 'Locales',
+                  icon: Icons.language_rounded,
+                  color: const Color(0xFF6C3CE1),
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _LocaleTag('EN', const Color(0xFF6C3CE1), active: true),
+                    _LocaleTag('DE', const Color(0xFF2563EB), active: true),
+                    _LocaleTag('AR', const Color(0xFFDB2777), active: true),
+                    _LocaleTag('JA', const Color(0xFF059669), active: true),
+                    _LocaleTag('FR', const Color(0xFF8E8EA0), active: false),
+                    _LocaleTag('ES', const Color(0xFF8E8EA0), active: false),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            // Viewports card
+            _SectionCard(
+              children: [
+                _SectionHeader(
+                  title: 'Viewports',
+                  icon: Icons.devices_rounded,
+                  color: const Color(0xFF2563EB),
+                ),
+                const SizedBox(height: 14),
+                _ViewportRow(
+                  icon: Icons.phone_iphone_rounded,
+                  name: 'Phone',
+                  dims: '393 × 852',
+                  color: const Color(0xFF2563EB),
+                  active: true,
+                ),
+                const SizedBox(height: 8),
+                _ViewportRow(
+                  icon: Icons.tablet_rounded,
+                  name: 'Tablet',
+                  dims: '768 × 1024',
+                  color: const Color(0xFF6C3CE1),
+                  active: true,
+                ),
+                const SizedBox(height: 8),
+                _ViewportRow(
+                  icon: Icons.desktop_windows_rounded,
+                  name: 'Desktop',
+                  dims: '1280 × 800',
+                  color: const Color(0xFF8E8EA0),
+                  active: false,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            // Text scales card
+            _SectionCard(
+              children: [
+                _SectionHeader(
+                  title: 'Text Scales',
+                  icon: Icons.format_size_rounded,
+                  color: const Color(0xFFDB2777),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    _ScalePill('1.0×', const Color(0xFF059669), active: true),
+                    const SizedBox(width: 8),
+                    _ScalePill('1.5×', const Color(0xFF8E8EA0), active: false),
+                    const SizedBox(width: 8),
+                    _ScalePill('2.0×', const Color(0xFFDB2777), active: true),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            // Output card
+            _SectionCard(
+              children: [
+                _SectionHeader(
+                  title: 'Output',
+                  icon: Icons.folder_outlined,
+                  color: const Color(0xFF059669),
+                ),
+                const SizedBox(height: 14),
+                _PathRow(
+                  label: 'Screenshots',
+                  path: '.locale_sweep/screenshots/',
+                ),
+                const Divider(height: 20, color: Color(0xFFEEEEF2)),
+                _PathRow(
+                  label: 'Reports',
+                  path: '.locale_sweep/reports/',
+                ),
+                const Divider(height: 20, color: Color(0xFFEEEEF2)),
+                _PathRow(
+                  label: 'ARB source',
+                  path: 'lib/l10n/',
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            // Matrix summary
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF6C3CE1), Color(0xFF3B82F6)],
+                ),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6C3CE1).withAlpha(40),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Test Matrix',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '4 locales × 2 scales × 2 viewports',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withAlpha(170),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(30),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      '16',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  final List<Widget> children;
+  const _SectionCard({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1A1A2E).withAlpha(8),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+
+  const _SectionHeader({
+    required this.title,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: color.withAlpha(25),
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Icon(icon, color: color, size: 17),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: color,
+            letterSpacing: -0.2,
           ),
         ),
-        ...children,
       ],
     );
   }
 }
 
-class _SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String value;
+class _LocaleTag extends StatelessWidget {
+  final String code;
+  final Color color;
+  final bool active;
 
-  const _SettingsTile({
+  const _LocaleTag(this.code, this.color, {required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 52,
+      height: 36,
+      decoration: BoxDecoration(
+        color: active ? color.withAlpha(20) : const Color(0xFFF0F0F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: active ? color.withAlpha(60) : const Color(0xFFE0E0E8),
+        ),
+      ),
+      child: Center(
+        child: Text(
+          code,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: active ? color : const Color(0xFFAAAAAA),
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ViewportRow extends StatelessWidget {
+  final IconData icon;
+  final String name;
+  final String dims;
+  final Color color;
+  final bool active;
+
+  const _ViewportRow({
     required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.value,
+    required this.name,
+    required this.dims,
+    required this.color,
+    required this.active,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: iconColor.withAlpha(25),
-          borderRadius: BorderRadius.circular(10),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: active ? color.withAlpha(12) : const Color(0xFFF8F8FB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: active ? color.withAlpha(40) : const Color(0xFFE8E8EE),
         ),
-        child: Icon(icon, color: iconColor, size: 22),
       ),
-      title: Text(title),
-      subtitle: Text(
-        value,
-        style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: active ? color : const Color(0xFFAAAAAA),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: active ? const Color(0xFF1A1A2E) : const Color(0xFFAAAAAA),
+            ),
+          ),
+          const Spacer(),
+          Text(
+            dims,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: active ? color : const Color(0xFFBBBBBB),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: active ? color : const Color(0xFFE0E0E8),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              active ? Icons.check : Icons.add,
+              color: Colors.white,
+              size: 13,
+            ),
+          ),
+        ],
       ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: Colors.grey.shade400,
+    );
+  }
+}
+
+class _ScalePill extends StatelessWidget {
+  final String label;
+  final Color color;
+  final bool active;
+
+  const _ScalePill(this.label, this.color, {required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        height: 44,
+        decoration: BoxDecoration(
+          color: active ? color.withAlpha(18) : const Color(0xFFF0F0F5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: active ? color.withAlpha(60) : const Color(0xFFE0E0E8),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: active ? color : const Color(0xFFAAAAAA),
+            ),
+          ),
+        ),
       ),
+    );
+  }
+}
+
+class _PathRow extends StatelessWidget {
+  final String label;
+  final String path;
+
+  const _PathRow({required this.label, required this.path});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 90,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A1A2E),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF6F7FB),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              path,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF6C3CE1),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
