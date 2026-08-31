@@ -16,19 +16,22 @@
 </p>
 
 <p align="center">
-  <a href="https://pub.dev/packages/locale_sweep"><img src="https://img.shields.io/pub/v/locale_sweep.svg?style=flat-square&color=6C3CE1" alt="pub.dev" /></a>
-  <a href="https://pub.dev/packages/locale_sweep/score"><img src="https://img.shields.io/pub/points/locale_sweep?style=flat-square&color=6C3CE1&label=pub%20points" alt="pub points" /></a>
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-6C3CE1.svg?style=flat-square" alt="License: MIT" /></a>
-  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/flutter-%E2%89%A53.32-6C3CE1.svg?style=flat-square" alt="Flutter 3.32+" /></a>
+  <a href="https://pub.dev/packages/locale_sweep"><img src="https://img.shields.io/pub/v/locale_sweep.svg?style=for-the-badge&color=E91E63" alt="pub.dev" /></a>
+  &nbsp;
+  <a href="https://pub.dev/packages/locale_sweep/score"><img src="https://img.shields.io/pub/points/locale_sweep?style=for-the-badge&color=E91E63&label=pub%20points" alt="pub points" /></a>
+  &nbsp;
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-E91E63.svg?style=for-the-badge" alt="License: MIT" /></a>
+  &nbsp;
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/flutter-%E2%89%A53.32-E91E63.svg?style=for-the-badge" alt="Flutter 3.32+" /></a>
 </p>
 
----
+<br/>
 
-### The problem
+> **The problem:** Your app looks perfect in English. Then a German user opens Settings and *"Benachrichtigungseinstellungen"* overflows the row. An Arabic user sees left-aligned text. A Japanese user hits a screen with an untranslated key. You find out from a 1-star review.
 
-Your app looks perfect in English. Then a German user opens Settings and "Benachrichtigungseinstellungen" overflows the row. An Arabic user sees left-aligned text. A Japanese user hits a screen with an untranslated key. You find out from a 1-star review.
+<br/>
 
-### The fix
+## The fix
 
 One function call. LocaleSweep multiplies your test across **locales × text scales × viewports**, captures a golden screenshot of every variant, and fails only the ones that break — with visual proof attached.
 
@@ -43,33 +46,33 @@ sweepTest(
 );
 ```
 
-That single call generates **16 test cases**. Each one renders your widget, checks for overflow, validates ARB translations, and saves a screenshot.
+> That single call generates **16 test cases**. Each one renders your widget, checks for overflow, validates ARB translations, and saves a screenshot.
 
----
+<br/>
 
 ## What it catches
 
-| Category | How it works |
-|:--|:--|
-| **Text overflow** | Intercepts `RenderFlex` overflow errors during layout — catches German compound words, Arabic expansion, CJK wrapping |
-| **Missing ARB keys** | Static analysis of ARB files — finds keys in `app_en.arb` that are absent in target locales |
-| **Placeholder mismatches** | Verifies `{count}`, `{name}`, etc. from base locale metadata appear in every translation |
-| **Golden regression** | Pixel-level comparison against committed baselines — catches unintended visual changes |
-| **Accessibility scaling** | Renders at 2x text scale to catch layouts that break for users with large text settings |
-| **RTL layout** | Auto-detects Arabic, Hebrew, Farsi and renders in right-to-left mode |
+| | Category | How it works |
+|:--|:--|:--|
+| **01** | **Text overflow** | Intercepts `RenderFlex` overflow errors — catches German compound words, Arabic expansion, CJK wrapping |
+| **02** | **Missing ARB keys** | Static analysis of ARB files — finds keys in `app_en.arb` absent in target locales |
+| **03** | **Placeholder mismatches** | Verifies `{count}`, `{name}`, etc. from base locale metadata appear in every translation |
+| **04** | **Golden regression** | Pixel-level comparison against committed baselines — catches unintended visual changes |
+| **05** | **Accessibility scaling** | Renders at 2x text scale to catch layouts that break for large text users |
+| **06** | **RTL layout** | Auto-detects Arabic, Hebrew, Farsi and renders right-to-left |
 
----
+<br/>
 
 ## Quick start
 
-**Install**
+**1. Install**
 
 ```yaml
 dev_dependencies:
   locale_sweep: ^0.1.1
 ```
 
-**Write a sweep test**
+**2. Write a sweep test**
 
 ```dart
 // test/sweep/onboarding_test.dart
@@ -91,14 +94,14 @@ void main() {
 }
 ```
 
-**Generate baselines, then guard them in CI**
+**3. Generate baselines, then guard them in CI**
 
 ```bash
 dart run locale_sweep update        # Generate golden screenshots locally
 dart run locale_sweep run           # Compare against baselines (CI)
 ```
 
----
+<br/>
 
 ## Screenshots
 
@@ -106,10 +109,10 @@ Every variant gets its own golden PNG — locale, text scale, and viewport encod
 
 <table>
   <tr>
-    <th>English · Phone</th>
-    <th>Arabic · RTL</th>
-    <th>English · 2x Scale</th>
-    <th>English · Tablet</th>
+    <th align="center">English · Phone</th>
+    <th align="center">Arabic · RTL</th>
+    <th align="center">English · 2x Scale</th>
+    <th align="center">English · Tablet</th>
   </tr>
   <tr>
     <td><img src="docs/gallery/onboarding_en_393x852.png" width="180" /></td>
@@ -125,9 +128,9 @@ Every variant gets its own golden PNG — locale, text scale, and viewport encod
   </tr>
 </table>
 
-<sub>Real golden files rendered with Roboto and Material Icons in headless Flutter widget tests — not mockups.</sub>
+<sub>Real golden files rendered with Roboto & Material Icons in headless Flutter widget tests — not mockups.</sub>
 
----
+<br/>
 
 ## CLI
 
@@ -139,9 +142,9 @@ dart run locale_sweep update                      # Regenerate golden baselines
 dart run locale_sweep update --flows settings     # Update specific flows only
 ```
 
-`run` **never** passes `--update-goldens`. Only `update` regenerates baselines. This prevents CI from silently accepting a broken layout as the new normal.
+> `run` **never** passes `--update-goldens`. Only `update` regenerates baselines. This prevents CI from silently accepting a broken layout as the new normal.
 
----
+<br/>
 
 ## GitHub Actions
 
@@ -154,11 +157,11 @@ dart run locale_sweep update --flows settings     # Update specific flows only
 
 Posts a PR comment with a failure table, locale summary, and screenshot links. Updates the same comment on re-runs — no spam.
 
----
+<br/>
 
 ## Configuration
 
-Create `locale_sweep.yaml` in your project root to customize defaults:
+Create `locale_sweep.yaml` in your project root:
 
 ```yaml
 locales: [en, de, ar, ja]
@@ -179,19 +182,21 @@ Or override per-flow directly in `sweepTest()`:
 sweepTest(
   'checkout',
   builder: () => const CheckoutPage(),
-  locales: ['en', 'de'],                          // Only test these locales
-  textScales: [1.0, 1.5, 2.0],                   // Three scale factors
-  viewports: [ViewportPreset.phoneSmall],          // One viewport
+  locales: ['en', 'de'],
+  textScales: [1.0, 1.5, 2.0],
+  viewports: [ViewportPreset.phoneSmall],
   arbDir: 'lib/l10n',
   captureScreenshots: true,
 );
 ```
 
----
+<br/>
 
 ## API reference
 
-### `sweepTest()`
+<details>
+<summary><strong><code>sweepTest()</code></strong> — expand to see all parameters</summary>
+<br/>
 
 | Parameter | Type | Default | Description |
 |:--|:--|:--|:--|
@@ -204,7 +209,11 @@ sweepTest(
 | `arbDir` | `String?` | config | Path to ARB files for static analysis |
 | `captureScreenshots` | `bool` | `true` | Save a golden per variant |
 
-### `ViewportPreset`
+</details>
+
+<details>
+<summary><strong><code>ViewportPreset</code></strong> — built-in presets</summary>
+<br/>
 
 | Preset | Dimensions | Use case |
 |:--|:--|:--|
@@ -215,7 +224,9 @@ sweepTest(
 
 Custom: `ViewportPreset(name: '1280x800', width: 1280, height: 800)`
 
----
+</details>
+
+<br/>
 
 ## Real-world validation
 
@@ -224,11 +235,11 @@ Tested against two popular open-source Flutter apps to verify signal quality:
 | App | Stars | Result |
 |:--|:--|:--|
 | **[Spotube](https://github.com/KRTirtho/spotube)** | 48k+ | 0 issues across de/ar/ja/fr/es/ko/zh — **zero false positives** |
-| **[wger](https://github.com/wger-project/flutter)** | 960+ | **165 missing Arabic keys**, **1 placeholder mismatch** (`{value}` in `topSet`), **301 missing Hebrew keys** — all real bugs |
+| **[wger](https://github.com/wger-project/flutter)** | 960+ | **165 missing Arabic keys**, **1 placeholder mismatch**, **301 missing Hebrew keys** — all real bugs |
 
-LocaleSweep found real translation gaps in wger while producing zero noise on Spotube's complete translations.
+> LocaleSweep found real translation gaps in wger while producing zero noise on Spotube's complete translations.
 
----
+<br/>
 
 ## Output
 
@@ -244,19 +255,21 @@ LocaleSweep found real translation gaps in wger while producing zero noise on Sp
     ...
 ```
 
----
+<br/>
 
 ## How it works
 
-1. **`sweepTest()`** expands into `locales × scales × viewports` individual `testWidgets` calls at declaration time
-2. Each test configures the Flutter test view with the target viewport, locale, text direction, and text scale
-3. Your widget is pumped inside `Directionality` + `MediaQuery` wrappers
-4. `OverflowDetector` hooks into `FlutterError.onError` to capture `RenderFlex` overflow without swallowing other errors
-5. `matchesGoldenFile` saves or compares the screenshot
-6. `ArbAnalyzer` runs once per group — static analysis of ARB JSON files, no widget rendering needed
-7. Results are recorded **before** `fail()` is called, so screenshots always exist even for broken variants
+| Step | What happens |
+|:--|:--|
+| **1** | `sweepTest()` expands into `locales × scales × viewports` individual `testWidgets` calls |
+| **2** | Each test configures the Flutter test view with the target viewport, locale, and text scale |
+| **3** | Your widget is pumped inside `Directionality` + `MediaQuery` wrappers |
+| **4** | `OverflowDetector` hooks into `FlutterError.onError` to capture `RenderFlex` overflow |
+| **5** | `matchesGoldenFile` saves or compares the screenshot |
+| **6** | `ArbAnalyzer` runs once per group — static analysis of ARB JSON, no rendering needed |
+| **7** | Results are recorded **before** `fail()` — screenshots always exist even for broken variants |
 
----
+<br/>
 
 ## Design decisions
 
@@ -266,7 +279,7 @@ LocaleSweep found real translation gaps in wger while producing zero noise on Sp
 
 **`run` and `update` are strictly separated.** `run` compares and fails. `update` regenerates. CI should only ever run `run`. This prevents broken layouts from being silently accepted as the new baseline.
 
----
+<br/>
 
 ## Test suite
 
@@ -281,8 +294,10 @@ LocaleSweep found real translation gaps in wger while producing zero noise on Sp
 | `sweep_integration_test.dart` | End-to-end: clean pass, broken ARB per-locale, matrix variant count |
 | `real_world_arb_test.dart` | Spotube + wger ARB analysis — proves zero false positives on real apps |
 
+<br/>
+
 ---
 
 <p align="center">
-  <sub>MIT License &middot; Built for Flutter teams shipping to a global audience.</sub>
+  <sub>MIT License · Built for Flutter teams shipping to a global audience.</sub>
 </p>
