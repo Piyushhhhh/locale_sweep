@@ -1,3 +1,8 @@
+## 0.1.2
+
+- Updated README with professional layout and screenshot gallery.
+- Fixed GitHub repository URLs in pubspec.yaml.
+
 ## 0.1.1
 
 - Add dartdoc comments to all public API elements.

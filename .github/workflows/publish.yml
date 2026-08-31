@@ -1,0 +1,62 @@
+name: Publish to pub.dev
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - 'pubspec.yaml'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  bump-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.0'
+          channel: 'stable'
+
+      - run: flutter pub get
+
+      - name: Run tests before publish
+        run: flutter test
+
+      - name: Bump patch version
+        id: bump
+        run: |
+          CURRENT=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+          MAJOR=$(echo "$CURRENT" | cut -d. -f1)
+          MINOR=$(echo "$CURRENT" | cut -d. -f2)
+          PATCH=$(echo "$CURRENT" | cut -d. -f3)
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          sed -i "s/^version: $CURRENT/version: $NEW_VERSION/" pubspec.yaml
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Bumped $CURRENT -> $NEW_VERSION"
+
+      - name: Update CHANGELOG
+        run: |
+          VERSION=${{ steps.bump.outputs.version }}
+          DATE=$(date +%Y-%m-%d)
+          sed -i "1s/^/## $VERSION\n\n- Auto-published on $DATE.\n\n/" CHANGELOG.md
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml CHANGELOG.md
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }}"
+          git push
+
+      - name: Publish to pub.dev
+        run: dart pub publish --force
+        env:
+          PUB_TOKEN: ${{ secrets.PUB_TOKEN }}
