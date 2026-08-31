@@ -41,13 +41,16 @@ void main() {
       _skipUnless(_spotubeArbDir);
       if (report == null) return;
       final deIssues = report!.issuesForLocale('de');
-      final missing =
-          deIssues.where((i) => i.type == ArbIssueType.missingKey).toList();
+      final missing = deIssues
+          .where((i) => i.type == ArbIssueType.missingKey)
+          .toList();
       final placeholders = deIssues
           .where((i) => i.type == ArbIssueType.placeholderMismatch)
           .toList();
-      print('Spotube DE: ${missing.length} missing, '
-          '${placeholders.length} placeholder mismatches');
+      print(
+        'Spotube DE: ${missing.length} missing, '
+        '${placeholders.length} placeholder mismatches',
+      );
       for (final issue in deIssues.take(5)) {
         print('  ${issue.type.name}: ${issue.detail}');
       }
@@ -57,13 +60,16 @@ void main() {
       _skipUnless(_spotubeArbDir);
       if (report == null) return;
       final arIssues = report!.issuesForLocale('ar');
-      final missing =
-          arIssues.where((i) => i.type == ArbIssueType.missingKey).toList();
+      final missing = arIssues
+          .where((i) => i.type == ArbIssueType.missingKey)
+          .toList();
       final placeholders = arIssues
           .where((i) => i.type == ArbIssueType.placeholderMismatch)
           .toList();
-      print('Spotube AR: ${missing.length} missing, '
-          '${placeholders.length} placeholder mismatches');
+      print(
+        'Spotube AR: ${missing.length} missing, '
+        '${placeholders.length} placeholder mismatches',
+      );
       for (final issue in arIssues.take(5)) {
         print('  ${issue.type.name}: ${issue.detail}');
       }
@@ -111,13 +117,16 @@ void main() {
       _skipUnless(_wgerArbDir);
       if (report == null) return;
       final deIssues = report!.issuesForLocale('de');
-      final missing =
-          deIssues.where((i) => i.type == ArbIssueType.missingKey).toList();
+      final missing = deIssues
+          .where((i) => i.type == ArbIssueType.missingKey)
+          .toList();
       final placeholders = deIssues
           .where((i) => i.type == ArbIssueType.placeholderMismatch)
           .toList();
-      print('wger DE: ${missing.length} missing, '
-          '${placeholders.length} placeholder mismatches');
+      print(
+        'wger DE: ${missing.length} missing, '
+        '${placeholders.length} placeholder mismatches',
+      );
       for (final issue in deIssues.take(5)) {
         print('  ${issue.type.name}: ${issue.detail}');
       }
@@ -127,8 +136,9 @@ void main() {
       _skipUnless(_wgerArbDir);
       if (report == null) return;
       final arIssues = report!.issuesForLocale('ar');
-      final missing =
-          arIssues.where((i) => i.type == ArbIssueType.missingKey).toList();
+      final missing = arIssues
+          .where((i) => i.type == ArbIssueType.missingKey)
+          .toList();
       final placeholders = arIssues
           .where((i) => i.type == ArbIssueType.placeholderMismatch)
           .toList();
@@ -139,8 +149,10 @@ void main() {
         reason: 'wger Arabic locale has significant missing translations',
       );
 
-      print('wger AR: ${missing.length} missing keys, '
-          '${placeholders.length} placeholder mismatches');
+      print(
+        'wger AR: ${missing.length} missing keys, '
+        '${placeholders.length} placeholder mismatches',
+      );
       print('Sample missing keys:');
       for (final issue in missing.take(10)) {
         print('  ${issue.key}');
@@ -157,8 +169,9 @@ void main() {
       _skipUnless(_wgerArbDir);
       if (report == null) return;
       final heIssues = report!.issuesForLocale('he');
-      final missing =
-          heIssues.where((i) => i.type == ArbIssueType.missingKey).toList();
+      final missing = heIssues
+          .where((i) => i.type == ArbIssueType.missingKey)
+          .toList();
       print('wger HE: ${missing.length} missing keys');
     });
 
@@ -207,15 +220,20 @@ void main() {
     );
 
     tearDownAll(() {
-      final results =
-          sweepResults.where((r) => r.flowName == 'spotube_layout').toList();
+      final results = sweepResults
+          .where((r) => r.flowName == 'spotube_layout')
+          .toList();
       final summary = SweepRunSummary(results: results);
 
       print('\n=== Spotube sweepTest Summary ===');
-      print('Variants: ${summary.total}, Passed: ${summary.passed}, '
-          'Failed: ${summary.failed}');
-      print('Overflows: ${summary.overflowCount}, '
-          'ARB issues: ${summary.arbIssueCount}');
+      print(
+        'Variants: ${summary.total}, Passed: ${summary.passed}, '
+        'Failed: ${summary.failed}',
+      );
+      print(
+        'Overflows: ${summary.overflowCount}, '
+        'ARB issues: ${summary.arbIssueCount}',
+      );
 
       for (final r in results.where((r) => r.arbIssues.isNotEmpty)) {
         print('  ${r.variant.locale}: ${r.arbIssues.length} ARB issues');
@@ -235,8 +253,10 @@ void main() {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Workout Plan',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(
+                  'Workout Plan',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
                 SizedBox(height: 16),
                 Text('Bench Press: 3 x 10 @ 80kg'),
                 Text('Squat: 4 x 8 @ 100kg'),
@@ -254,15 +274,20 @@ void main() {
     );
 
     tearDownAll(() {
-      final results =
-          sweepResults.where((r) => r.flowName == 'wger_layout').toList();
+      final results = sweepResults
+          .where((r) => r.flowName == 'wger_layout')
+          .toList();
       final summary = SweepRunSummary(results: results);
 
       print('\n=== wger sweepTest Summary ===');
-      print('Variants: ${summary.total}, Passed: ${summary.passed}, '
-          'Failed: ${summary.failed}');
-      print('Overflows: ${summary.overflowCount}, '
-          'ARB issues: ${summary.arbIssueCount}');
+      print(
+        'Variants: ${summary.total}, Passed: ${summary.passed}, '
+        'Failed: ${summary.failed}',
+      );
+      print(
+        'Overflows: ${summary.overflowCount}, '
+        'ARB issues: ${summary.arbIssueCount}',
+      );
 
       for (final r in results) {
         final issueCount = r.arbIssues.length;

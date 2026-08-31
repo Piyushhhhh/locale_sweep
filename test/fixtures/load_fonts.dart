@@ -11,9 +11,7 @@ Future<void> loadTestFonts() async {
     '$fontDir/Roboto-Medium.ttf',
   ]);
 
-  await _loadFont('MaterialIcons', [
-    '$fontDir/MaterialIcons-Regular.otf',
-  ]);
+  await _loadFont('MaterialIcons', ['$fontDir/MaterialIcons-Regular.otf']);
 }
 
 Future<void> _loadFont(String family, List<String> paths) async {
