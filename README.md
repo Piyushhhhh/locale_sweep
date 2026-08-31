@@ -1,7 +1,7 @@
 <p align="center">
   <img src="docs/gallery/onboarding_en_393x852.png" width="160" alt="Onboarding — English" />
   &nbsp;&nbsp;
-  <img src="docs/gallery/settings_en_393x852.png" width="160" alt="Configuration — English" />
+  <img src="docs/gallery/config_en_393x852.png" width="160" alt="Configuration — English" />
   &nbsp;&nbsp;
   <img src="docs/gallery/onboarding_ar_393x852.png" width="160" alt="Onboarding — Arabic RTL" />
   &nbsp;&nbsp;
@@ -121,10 +121,10 @@ Every variant gets its own golden PNG — locale, text scale, and viewport encod
     <td><img src="docs/gallery/onboarding_en_768x1024.png" width="180" /></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/settings_en_393x852.png" width="180" /></td>
+    <td><img src="docs/gallery/config_en_393x852.png" width="180" /></td>
     <td><img src="docs/gallery/onboarding_de_393x852.png" width="180" /></td>
-    <td><img src="docs/gallery/settings_en_2.0x_393x852.png" width="180" /></td>
-    <td><img src="docs/gallery/settings_en_768x1024.png" width="180" /></td>
+    <td><img src="docs/gallery/config_en_2.0x_393x852.png" width="180" /></td>
+    <td><img src="docs/gallery/config_en_768x1024.png" width="180" /></td>
   </tr>
 </table>
 
