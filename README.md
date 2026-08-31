@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="docs/gallery/onboarding_en_393x852.png?v=3" width="160" alt="Onboarding — English" />
+  <img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/onboarding_en_393x852.png?v=3" width="160" alt="Onboarding — English" />
   &nbsp;&nbsp;
-  <img src="docs/gallery/config_en_393x852.png?v=3" width="160" alt="Configuration — English" />
+  <img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/config_en_393x852.png?v=3" width="160" alt="Configuration — English" />
   &nbsp;&nbsp;
-  <img src="docs/gallery/onboarding_ar_393x852.png?v=3" width="160" alt="Onboarding — Arabic RTL" />
+  <img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/onboarding_ar_393x852.png?v=3" width="160" alt="Onboarding — Arabic RTL" />
   &nbsp;&nbsp;
-  <img src="docs/gallery/onboarding_en_2.0x_393x852.png?v=3" width="160" alt="Onboarding — 2x text scale" />
+  <img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/onboarding_en_2.0x_393x852.png?v=3" width="160" alt="Onboarding — 2x text scale" />
 </p>
 
 <h1 align="center">LocaleSweep</h1>
@@ -115,16 +115,16 @@ Every variant gets its own golden PNG — locale, text scale, and viewport encod
     <th align="center">English · Tablet</th>
   </tr>
   <tr>
-    <td><img src="docs/gallery/onboarding_en_393x852.png?v=3" width="180" /></td>
-    <td><img src="docs/gallery/onboarding_ar_393x852.png?v=3" width="180" /></td>
-    <td><img src="docs/gallery/onboarding_en_2.0x_393x852.png?v=3" width="180" /></td>
-    <td><img src="docs/gallery/onboarding_en_768x1024.png?v=3" width="180" /></td>
+    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/onboarding_en_393x852.png?v=3" width="180" /></td>
+    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/onboarding_ar_393x852.png?v=3" width="180" /></td>
+    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/onboarding_en_2.0x_393x852.png?v=3" width="180" /></td>
+    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/onboarding_en_768x1024.png?v=3" width="180" /></td>
   </tr>
   <tr>
-    <td><img src="docs/gallery/config_en_393x852.png?v=3" width="180" /></td>
-    <td><img src="docs/gallery/onboarding_de_393x852.png?v=3" width="180" /></td>
-    <td><img src="docs/gallery/config_en_2.0x_393x852.png?v=3" width="180" /></td>
-    <td><img src="docs/gallery/config_en_768x1024.png?v=3" width="180" /></td>
+    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/config_en_393x852.png?v=3" width="180" /></td>
+    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/onboarding_de_393x852.png?v=3" width="180" /></td>
+    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/config_en_2.0x_393x852.png?v=3" width="180" /></td>
+    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/local_sweep/main/docs/gallery/config_en_768x1024.png?v=3" width="180" /></td>
   </tr>
 </table>
 
