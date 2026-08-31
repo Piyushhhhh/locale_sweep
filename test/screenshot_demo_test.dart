@@ -16,10 +16,7 @@ void main() {
       'onboarding',
       builder: () => MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          brightness: Brightness.light,
-          fontFamily: 'Roboto',
-        ),
+        theme: ThemeData(brightness: Brightness.light, fontFamily: 'Roboto'),
         home: const _OnboardingScreen(),
       ),
       locales: ['en', 'de', 'ar', 'ja'],
@@ -35,10 +32,7 @@ void main() {
       'settings',
       builder: () => MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          brightness: Brightness.light,
-          fontFamily: 'Roboto',
-        ),
+        theme: ThemeData(brightness: Brightness.light, fontFamily: 'Roboto'),
         home: const _SettingsScreen(),
       ),
       locales: ['en', 'de', 'ar', 'ja'],
@@ -62,6 +56,84 @@ const _grey = Color(0xFF9E9E9E);
 const _greyLight = Color(0xFFF5F5F5);
 const _white = Color(0xFFFFFFFF);
 
+// ─── Translations ──────────────────────────────────────────────────────────
+
+const _t = {
+  'en': {
+    'title': 'LocaleSweep',
+    'subtitle': 'Catch broken translations\nbefore your users do',
+    'checks': '6 checks',
+    'ci': 'CI ready',
+    'config': '0 config',
+    'missing': 'Missing Keys',
+    'missingDesc': 'Finds absent ARB keys across target locales',
+    'overflow': 'Overflow Detection',
+    'overflowDesc': 'Catches broken layouts at 2x text scale',
+    'rtl': 'RTL Verification',
+    'rtlDesc': 'Auto-flips layout for Arabic & Hebrew',
+    'golden': 'Golden Screenshots',
+    'goldenDesc': 'Pixel-level proof for every variant',
+    'cta': 'Get Started',
+    'configuration': 'Configuration',
+  },
+  'de': {
+    'title': 'LocaleSweep',
+    'subtitle': 'Fehlerhafte Ubersetzungen\nfinden, bevor Nutzer es tun',
+    'checks': '6 Pruefungen',
+    'ci': 'CI-fhig',
+    'config': '0 Konfig',
+    'missing': 'Fehlende Schluessel',
+    'missingDesc': 'Findet fehlende ARB-Schluessel in Zielsprachen',
+    'overflow': 'Uberlauf-Erkennung',
+    'overflowDesc': 'Erkennt defekte Layouts bei 2x Textgroesse',
+    'rtl': 'RTL-Pruefung',
+    'rtlDesc': 'Spiegelt Layout fuer Arabisch & Hebraeisch',
+    'golden': 'Golden Screenshots',
+    'goldenDesc': 'Pixelgenauer Nachweis jeder Variante',
+    'cta': 'Loslegen',
+    'configuration': 'Konfiguration',
+  },
+  'ar': {
+    'title': 'LocaleSweep',
+    'subtitle': 'RTL mode active\nLayout is mirrored',
+    'checks': '6 checks',
+    'ci': 'CI ready',
+    'config': 'RTL',
+    'missing': 'Missing Keys',
+    'missingDesc': 'Finds absent ARB keys across target locales',
+    'overflow': 'Overflow Detection',
+    'overflowDesc': 'Catches broken layouts at 2x text scale',
+    'rtl': 'RTL Verification',
+    'rtlDesc': 'Auto-flips layout for Arabic & Hebrew',
+    'golden': 'Golden Screenshots',
+    'goldenDesc': 'Pixel-level proof for every variant',
+    'cta': 'Get Started',
+    'configuration': 'Configuration',
+  },
+  'ja': {
+    'title': 'LocaleSweep',
+    'subtitle': 'Catch broken translations\nbefore your users do',
+    'checks': '6 checks',
+    'ci': 'CI ready',
+    'config': '0 config',
+    'missing': 'Missing Keys',
+    'missingDesc': 'Finds absent ARB keys across target locales',
+    'overflow': 'Overflow Detection',
+    'overflowDesc': 'Catches broken layouts at 2x text scale',
+    'rtl': 'RTL Verification',
+    'rtlDesc': 'Auto-flips layout for Arabic & Hebrew',
+    'golden': 'Golden Screenshots',
+    'goldenDesc': 'Pixel-level proof for every variant',
+    'cta': 'Get Started',
+    'configuration': 'Configuration',
+  },
+};
+
+String _tr(BuildContext context, String key) {
+  final locale = View.of(context).platformDispatcher.locale.languageCode;
+  return _t[locale]?[key] ?? _t['en']![key]!;
+}
+
 // ─── Onboarding ────────────────────────────────────────────────────────────
 
 class _OnboardingScreen extends StatelessWidget {
@@ -71,189 +143,186 @@ class _OnboardingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _pinkSoft,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Hero area
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFFCE4EC), Color(0xFFF8BBD0)],
+      body: Builder(
+        builder: (ctx) {
+          String t(String k) => _tr(ctx, k);
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xFFFCE4EC), Color(0xFFF8BBD0)],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(36),
+                      bottomRight: Radius.circular(36),
+                    ),
+                  ),
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: _pink,
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _pink.withAlpha(60),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.translate_rounded,
+                                  color: _white,
+                                  size: 22,
+                                ),
+                              ),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _white.withAlpha(180),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'v0.1.1',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: _pink,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            t('title'),
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                              color: _dark,
+                              letterSpacing: -1.0,
+                              height: 1.1,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            t('subtitle'),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: _dark.withAlpha(140),
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              _StatPill(t('checks'), Icons.shield_outlined),
+                              _StatPill(t('ci'), Icons.rocket_launch_outlined),
+                              _StatPill(t('config'), Icons.bolt_outlined),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(36),
-                  bottomRight: Radius.circular(36),
-                ),
-              ),
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                   child: Column(
                     children: [
-                      // Top bar
-                      Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: _pink,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _pink.withAlpha(60),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                      _FeatureCard(
+                        icon: Icons.language_rounded,
+                        title: t('missing'),
+                        desc: t('missingDesc'),
+                        accent: _pink,
+                      ),
+                      const SizedBox(height: 10),
+                      _FeatureCard(
+                        icon: Icons.format_size_rounded,
+                        title: t('overflow'),
+                        desc: t('overflowDesc'),
+                        accent: _rose,
+                      ),
+                      const SizedBox(height: 10),
+                      _FeatureCard(
+                        icon: Icons.swap_horiz_rounded,
+                        title: t('rtl'),
+                        desc: t('rtlDesc'),
+                        accent: const Color(0xFFAD1457),
+                      ),
+                      const SizedBox(height: 10),
+                      _FeatureCard(
+                        icon: Icons.camera_alt_rounded,
+                        title: t('golden'),
+                        desc: t('goldenDesc'),
+                        accent: const Color(0xFFC2185B),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        width: double.infinity,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFE91E63), Color(0xFFEC4899)],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _pink.withAlpha(70),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
                             ),
-                            child: const Icon(
-                              Icons.translate_rounded,
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            t('cta'),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
                               color: _white,
-                              size: 22,
                             ),
                           ),
-                          const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _white.withAlpha(180),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'v0.1.1',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: _pink,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      // Big title
-                      const Text(
-                        'LocaleSweep',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w900,
-                          color: _dark,
-                          letterSpacing: -1.0,
-                          height: 1.1,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       Text(
-                        'Catch broken translations\nbefore your users do',
-                        textAlign: TextAlign.center,
+                        'pub.dev/packages/locale_sweep',
                         style: TextStyle(
-                          fontSize: 14,
-                          color: _dark.withAlpha(140),
-                          height: 1.5,
+                          fontSize: 11,
+                          color: _dark.withAlpha(80),
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      // Stat pills
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          _StatPill('6 checks', Icons.shield_outlined),
-                          _StatPill('CI ready', Icons.rocket_launch_outlined),
-                          _StatPill('0 config', Icons.bolt_outlined),
-                        ],
-                      ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
-              ),
+              ],
             ),
-
-            // Feature cards
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-              child: Column(
-                children: [
-                  _FeatureCard(
-                    icon: Icons.language_rounded,
-                    title: 'Missing Keys',
-                    desc: 'Finds absent ARB keys across target locales',
-                    accent: _pink,
-                  ),
-                  const SizedBox(height: 10),
-                  _FeatureCard(
-                    icon: Icons.format_size_rounded,
-                    title: 'Overflow Detection',
-                    desc: 'Catches broken layouts at 2x text scale',
-                    accent: _rose,
-                  ),
-                  const SizedBox(height: 10),
-                  _FeatureCard(
-                    icon: Icons.swap_horiz_rounded,
-                    title: 'RTL Verification',
-                    desc: 'Auto-flips layout for Arabic & Hebrew',
-                    accent: const Color(0xFFAD1457),
-                  ),
-                  const SizedBox(height: 10),
-                  _FeatureCard(
-                    icon: Icons.camera_alt_rounded,
-                    title: 'Golden Screenshots',
-                    desc: 'Pixel-level proof for every variant',
-                    accent: const Color(0xFFC2185B),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // CTA
-                  Container(
-                    width: double.infinity,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFE91E63), Color(0xFFEC4899)],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _pink.withAlpha(70),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Get Started',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: _white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'pub.dev/packages/locale_sweep',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: _dark.withAlpha(80),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -372,215 +441,222 @@ class _SettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: _pinkSoft,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          children: [
-            const SizedBox(height: 16),
-            // Header
-            Row(
+        child: Builder(
+          builder: (ctx) {
+            final title = _tr(ctx, 'configuration');
+            return ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               children: [
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE91E63), Color(0xFFEC4899)],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _pink.withAlpha(50),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.translate_rounded,
+                        color: _white,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              color: _dark,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const Text(
+                            'locale_sweep.yaml',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: _grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // Locales
+                const _Card(
+                  children: [
+                    _Header('Locales', Icons.language_rounded),
+                    SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _Tag('EN', _pink, active: true),
+                        _Tag('DE', _rose, active: true),
+                        _Tag('AR', Color(0xFFAD1457), active: true),
+                        _Tag('JA', Color(0xFFC2185B), active: true),
+                        _Tag('FR', _grey, active: false),
+                        _Tag('ES', _grey, active: false),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Viewports
+                const _Card(
+                  children: [
+                    _Header('Viewports', Icons.devices_rounded),
+                    SizedBox(height: 12),
+                    _DeviceRow(
+                      Icons.phone_iphone_rounded,
+                      'Phone',
+                      '393 × 852',
+                      _pink,
+                      true,
+                    ),
+                    SizedBox(height: 8),
+                    _DeviceRow(
+                      Icons.tablet_rounded,
+                      'Tablet',
+                      '768 × 1024',
+                      _rose,
+                      true,
+                    ),
+                    SizedBox(height: 8),
+                    _DeviceRow(
+                      Icons.desktop_windows_rounded,
+                      'Desktop',
+                      '1280 × 800',
+                      _grey,
+                      false,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Text scales
+                const _Card(
+                  children: [
+                    _Header('Text Scales', Icons.format_size_rounded),
+                    SizedBox(height: 12),
+                    Row(
+                      children: [
+                        _ScaleChip('1.0×', _pink, true),
+                        SizedBox(width: 8),
+                        _ScaleChip('1.5×', _grey, false),
+                        SizedBox(width: 8),
+                        _ScaleChip('2.0×', _rose, true),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Output
+                _Card(
+                  children: [
+                    const _Header('Output', Icons.folder_outlined),
+                    const SizedBox(height: 12),
+                    const _PathItem(
+                      'Screenshots',
+                      '.locale_sweep/screenshots/',
+                    ),
+                    Divider(height: 16, color: _pinkLight.withAlpha(180)),
+                    const _PathItem('Reports', '.locale_sweep/reports/'),
+                    Divider(height: 16, color: _pinkLight.withAlpha(180)),
+                    const _PathItem('ARB source', 'lib/l10n/'),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Matrix banner
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFFE91E63), Color(0xFFEC4899)],
                     ),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(18),
                     boxShadow: [
                       BoxShadow(
-                        color: _pink.withAlpha(50),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        color: _pink.withAlpha(40),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.translate_rounded,
-                    color: _white,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        'Configuration',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          color: _dark,
-                          letterSpacing: -0.5,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Test Matrix',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: _white,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '4 locales × 2 scales × 2 viewports',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: _white.withAlpha(180),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        'locale_sweep.yaml',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: _grey,
-                          fontWeight: FontWeight.w500,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // Locales
-            _Card(
-              children: [
-                _Header('Locales', Icons.language_rounded),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _Tag('EN', _pink, active: true),
-                    _Tag('DE', _rose, active: true),
-                    _Tag('AR', const Color(0xFFAD1457), active: true),
-                    _Tag('JA', const Color(0xFFC2185B), active: true),
-                    _Tag('FR', _grey, active: false),
-                    _Tag('ES', _grey, active: false),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Viewports
-            _Card(
-              children: [
-                _Header('Viewports', Icons.devices_rounded),
-                const SizedBox(height: 12),
-                _DeviceRow(
-                  Icons.phone_iphone_rounded,
-                  'Phone',
-                  '393 × 852',
-                  _pink,
-                  true,
-                ),
-                const SizedBox(height: 8),
-                _DeviceRow(
-                  Icons.tablet_rounded,
-                  'Tablet',
-                  '768 × 1024',
-                  _rose,
-                  true,
-                ),
-                const SizedBox(height: 8),
-                _DeviceRow(
-                  Icons.desktop_windows_rounded,
-                  'Desktop',
-                  '1280 × 800',
-                  _grey,
-                  false,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Text scales
-            _Card(
-              children: [
-                _Header('Text Scales', Icons.format_size_rounded),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _ScaleChip('1.0×', _pink, true),
-                    const SizedBox(width: 8),
-                    _ScaleChip('1.5×', _grey, false),
-                    const SizedBox(width: 8),
-                    _ScaleChip('2.0×', _rose, true),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Output
-            _Card(
-              children: [
-                _Header('Output', Icons.folder_outlined),
-                const SizedBox(height: 12),
-                _PathItem('Screenshots', '.locale_sweep/screenshots/'),
-                Divider(height: 16, color: _pinkLight.withAlpha(180)),
-                _PathItem('Reports', '.locale_sweep/reports/'),
-                Divider(height: 16, color: _pinkLight.withAlpha(180)),
-                _PathItem('ARB source', 'lib/l10n/'),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Matrix banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFE91E63), Color(0xFFEC4899)],
-                ),
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: _pink.withAlpha(40),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Test Matrix',
+                        decoration: BoxDecoration(
+                          color: _white.withAlpha(40),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          '16',
                           style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
                             color: _white,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '4 locales × 2 scales × 2 viewports',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: _white.withAlpha(180),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _white.withAlpha(40),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      '16',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: _white,
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
+                ),
+                const SizedBox(height: 20),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -703,11 +779,7 @@ class _DeviceRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: active ? color : const Color(0xFFBBBBBB),
-          ),
+          Icon(icon, size: 18, color: active ? color : const Color(0xFFBBBBBB)),
           const SizedBox(width: 10),
           Text(
             name,
