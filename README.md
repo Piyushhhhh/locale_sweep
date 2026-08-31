@@ -1,3 +1,5 @@
+<div align="center">
+
 # LocaleSweep
 
 **Localization QA for Flutter — automated.**
@@ -8,6 +10,8 @@ One function call. Every locale, viewport, and text scale. Screenshots + failure
 [![pub points](https://img.shields.io/pub/points/locale_sweep?style=for-the-badge&color=E91E63&label=pub%20points)](https://pub.dev/packages/locale_sweep/score)
 [![License: MIT](https://img.shields.io/badge/license-MIT-E91E63.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Flutter 3.32+](https://img.shields.io/badge/flutter-%E2%89%A53.32-E91E63.svg?style=for-the-badge)](https://flutter.dev)
+
+</div>
 
 | English | German | Config | 2x Scale |
 |:---:|:---:|:---:|:---:|
@@ -54,7 +58,7 @@ sweepTest(
 
 ```yaml
 dev_dependencies:
-  locale_sweep: ^0.1.3
+  locale_sweep: ^0.1.4
 ```
 
 ### 2. Write a sweep test

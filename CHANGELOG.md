@@ -1,3 +1,9 @@
+## 0.1.4
+
+- Fixed Dart SDK constraint from ^3.11.5 to ^3.8.0 for broader compatibility.
+- Centered title and badges on pub.dev README.
+- Updated CI workflows to Flutter 3.41.9.
+
 ## 0.1.3
 
 - Rewrote README for pub.dev compatibility — pure Markdown, proper image alignment.
