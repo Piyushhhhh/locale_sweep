@@ -1,3 +1,8 @@
+## 0.1.3
+
+- Rewrote README for pub.dev compatibility — pure Markdown, proper image alignment.
+- Added CI and auto-publish GitHub Actions workflows.
+
 ## 0.1.2
 
 - Updated README with professional layout and screenshot gallery.
