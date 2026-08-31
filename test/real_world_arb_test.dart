@@ -1,28 +1,46 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locale_sweep/locale_sweep.dart';
 
+const _spotubeArbDir = '/tmp/locale_sweep_test/spotube/lib/l10n';
+const _wgerArbDir = '/tmp/locale_sweep_test/wger/lib/l10n';
+
+bool _hasFixture(String path) => Directory(path).existsSync();
+
+void _skipUnless(String path) {
+  if (!_hasFixture(path)) {
+    markTestSkipped('ARB fixtures not found at $path');
+  }
+}
+
 void main() {
   group('Spotube (48k+ stars) ARB analysis', () {
-    late ArbReport report;
+    ArbReport? report;
 
     setUpAll(() {
+      if (!_hasFixture(_spotubeArbDir)) return;
       report = ArbAnalyzer.analyze(
-        arbDir: '/tmp/locale_sweep_test/spotube/lib/l10n',
+        arbDir: _spotubeArbDir,
         locales: ['en', 'de', 'ar', 'ja', 'fr', 'es', 'ko', 'zh'],
       );
     });
 
     test('finds locale ARB files without error', () {
-      final fileIssues = report.issues
+      _skipUnless(_spotubeArbDir);
+      if (report == null) return;
+      final fileIssues = report!.issues
           .where((i) => i.type == ArbIssueType.missingFile)
           .toList();
       expect(fileIssues, isEmpty, reason: 'All target locales should exist');
-      print('Spotube: analyzed ${report.byLocale.keys.length} locales');
+      print('Spotube: analyzed ${report!.byLocale.keys.length} locales');
     });
 
     test('German (de) coverage', () {
-      final deIssues = report.issuesForLocale('de');
+      _skipUnless(_spotubeArbDir);
+      if (report == null) return;
+      final deIssues = report!.issuesForLocale('de');
       final missing =
           deIssues.where((i) => i.type == ArbIssueType.missingKey).toList();
       final placeholders = deIssues
@@ -36,7 +54,9 @@ void main() {
     });
 
     test('Arabic (ar) coverage', () {
-      final arIssues = report.issuesForLocale('ar');
+      _skipUnless(_spotubeArbDir);
+      if (report == null) return;
+      final arIssues = report!.issuesForLocale('ar');
       final missing =
           arIssues.where((i) => i.type == ArbIssueType.missingKey).toList();
       final placeholders = arIssues
@@ -50,7 +70,9 @@ void main() {
     });
 
     test('Japanese (ja) coverage', () {
-      final jaIssues = report.issuesForLocale('ja');
+      _skipUnless(_spotubeArbDir);
+      if (report == null) return;
+      final jaIssues = report!.issuesForLocale('ja');
       print('Spotube JA: ${jaIssues.length} total issues');
       for (final issue in jaIssues.take(5)) {
         print('  ${issue.type.name}: ${issue.detail}');
@@ -58,30 +80,37 @@ void main() {
     });
 
     test('base locale (en) has no issues', () {
-      final enIssues = report.issuesForLocale('en');
+      _skipUnless(_spotubeArbDir);
+      if (report == null) return;
+      final enIssues = report!.issuesForLocale('en');
       expect(enIssues, isEmpty, reason: 'Base locale should have no issues');
     });
   });
 
   group('wger Workout Manager (960+ stars) ARB analysis', () {
-    late ArbReport report;
+    ArbReport? report;
 
     setUpAll(() {
+      if (!_hasFixture(_wgerArbDir)) return;
       report = ArbAnalyzer.analyze(
-        arbDir: '/tmp/locale_sweep_test/wger/lib/l10n',
+        arbDir: _wgerArbDir,
         locales: ['en', 'de', 'ar', 'fr', 'es', 'ja', 'he', 'tr'],
       );
     });
 
     test('finds locale ARB files', () {
-      final fileIssues = report.issues
+      _skipUnless(_wgerArbDir);
+      if (report == null) return;
+      final fileIssues = report!.issues
           .where((i) => i.type == ArbIssueType.missingFile)
           .toList();
       print('wger: analyzed, ${fileIssues.length} missing file(s)');
     });
 
     test('German (de) has good coverage', () {
-      final deIssues = report.issuesForLocale('de');
+      _skipUnless(_wgerArbDir);
+      if (report == null) return;
+      final deIssues = report!.issuesForLocale('de');
       final missing =
           deIssues.where((i) => i.type == ArbIssueType.missingKey).toList();
       final placeholders = deIssues
@@ -95,14 +124,15 @@ void main() {
     });
 
     test('Arabic (ar) has significant missing translations', () {
-      final arIssues = report.issuesForLocale('ar');
+      _skipUnless(_wgerArbDir);
+      if (report == null) return;
+      final arIssues = report!.issuesForLocale('ar');
       final missing =
           arIssues.where((i) => i.type == ArbIssueType.missingKey).toList();
       final placeholders = arIssues
           .where((i) => i.type == ArbIssueType.placeholderMismatch)
           .toList();
 
-      // wger has ~165 missing Arabic keys — real bugs
       expect(
         missing.length,
         greaterThan(100),
@@ -124,14 +154,18 @@ void main() {
     });
 
     test('Hebrew (he) coverage', () {
-      final heIssues = report.issuesForLocale('he');
+      _skipUnless(_wgerArbDir);
+      if (report == null) return;
+      final heIssues = report!.issuesForLocale('he');
       final missing =
           heIssues.where((i) => i.type == ArbIssueType.missingKey).toList();
       print('wger HE: ${missing.length} missing keys');
     });
 
     test('base locale (en) has no issues', () {
-      final enIssues = report.issuesForLocale('en');
+      _skipUnless(_wgerArbDir);
+      if (report == null) return;
+      final enIssues = report!.issuesForLocale('en');
       expect(enIssues, isEmpty, reason: 'Base locale should have no issues');
     });
   });
@@ -168,7 +202,7 @@ void main() {
       locales: ['en', 'de', 'ar', 'ja'],
       textScales: [1.0, 2.0],
       viewports: [ViewportPreset.phone],
-      arbDir: '/tmp/locale_sweep_test/spotube/lib/l10n',
+      arbDir: _hasFixture(_spotubeArbDir) ? _spotubeArbDir : null,
       captureScreenshots: false,
     );
 
@@ -215,7 +249,7 @@ void main() {
       locales: ['en', 'de', 'ar'],
       textScales: [1.0, 2.0],
       viewports: [ViewportPreset.phone, ViewportPreset.phoneSmall],
-      arbDir: '/tmp/locale_sweep_test/wger/lib/l10n',
+      arbDir: _hasFixture(_wgerArbDir) ? _wgerArbDir : null,
       captureScreenshots: false,
     );
 
