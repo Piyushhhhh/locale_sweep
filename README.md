@@ -1,29 +1,17 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_en_393x852.png?v=5" width="160" alt="English" />
-  &nbsp;&nbsp;
-  <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_de_393x852.png?v=5" width="160" alt="German" />
-  &nbsp;&nbsp;
-  <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/config_en_393x852.png?v=5" width="160" alt="Config" />
-  &nbsp;&nbsp;
-  <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_en_2.0x_393x852.png?v=5" width="160" alt="2x Scale" />
-</p>
+# LocaleSweep
 
-<h1 align="center">LocaleSweep</h1>
+**Localization QA for Flutter — automated.**
 
-<p align="center">
-  <strong>Localization QA for Flutter — automated.</strong><br/>
-  <sub>One function call. Every locale, viewport, and text scale. Screenshots + failure reports.</sub>
-</p>
+One function call. Every locale, viewport, and text scale. Screenshots + failure reports.
 
-<p align="center">
-  <a href="https://pub.dev/packages/locale_sweep"><img src="https://img.shields.io/pub/v/locale_sweep.svg?style=for-the-badge&color=E91E63" alt="pub.dev" /></a>
-  &nbsp;
-  <a href="https://pub.dev/packages/locale_sweep/score"><img src="https://img.shields.io/pub/points/locale_sweep?style=for-the-badge&color=E91E63&label=pub%20points" alt="pub points" /></a>
-  &nbsp;
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-E91E63.svg?style=for-the-badge" alt="License: MIT" /></a>
-  &nbsp;
-  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/flutter-%E2%89%A53.32-E91E63.svg?style=for-the-badge" alt="Flutter 3.32+" /></a>
-</p>
+[![pub.dev](https://img.shields.io/pub/v/locale_sweep.svg?style=for-the-badge&color=E91E63)](https://pub.dev/packages/locale_sweep)
+[![pub points](https://img.shields.io/pub/points/locale_sweep?style=for-the-badge&color=E91E63&label=pub%20points)](https://pub.dev/packages/locale_sweep/score)
+[![License: MIT](https://img.shields.io/badge/license-MIT-E91E63.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Flutter 3.32+](https://img.shields.io/badge/flutter-%E2%89%A53.32-E91E63.svg?style=for-the-badge)](https://flutter.dev)
+
+| English | German | Config | 2x Scale |
+|:---:|:---:|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_en_393x852.png?v=6" width="180" /> | <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_de_393x852.png?v=6" width="180" /> | <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/config_en_393x852.png?v=6" width="180" /> | <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_en_2.0x_393x852.png?v=6" width="180" /> |
 
 ---
 
@@ -66,7 +54,7 @@ sweepTest(
 
 ```yaml
 dev_dependencies:
-  locale_sweep: ^0.1.1
+  locale_sweep: ^0.1.2
 ```
 
 ### 2. Write a sweep test
@@ -108,28 +96,19 @@ dart run locale_sweep run
 
 Every variant gets its own golden PNG — locale, text scale, and viewport encoded in the filename.
 
-<table>
-  <tr>
-    <th align="center">English</th>
-    <th align="center">German</th>
-    <th align="center">2x Scale</th>
-    <th align="center">Tablet</th>
-  </tr>
-  <tr>
-    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_en_393x852.png?v=5" width="180" /></td>
-    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_de_393x852.png?v=5" width="180" /></td>
-    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_en_2.0x_393x852.png?v=5" width="180" /></td>
-    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_en_768x1024.png?v=5" width="180" /></td>
-  </tr>
-  <tr>
-    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/config_en_393x852.png?v=5" width="180" /></td>
-    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/config_de_393x852.png?v=5" width="180" /></td>
-    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/config_en_2.0x_393x852.png?v=5" width="180" /></td>
-    <td><img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/config_en_768x1024.png?v=5" width="180" /></td>
-  </tr>
-</table>
+**Onboarding flow**
 
-<sub>Real golden files from headless Flutter widget tests — not mockups.</sub>
+| English | German | 2x Scale | Tablet |
+|:---:|:---:|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_en_393x852.png?v=6" width="180" /> | <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_de_393x852.png?v=6" width="180" /> | <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_en_2.0x_393x852.png?v=6" width="180" /> | <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/onboarding_en_768x1024.png?v=6" width="180" /> |
+
+**Configuration flow**
+
+| English | German | 2x Scale | Tablet |
+|:---:|:---:|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/config_en_393x852.png?v=6" width="180" /> | <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/config_de_393x852.png?v=6" width="180" /> | <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/config_en_2.0x_393x852.png?v=6" width="180" /> | <img src="https://raw.githubusercontent.com/Piyushhhhh/locale_sweep/main/docs/gallery/config_en_768x1024.png?v=6" width="180" /> |
+
+*Real golden files from headless Flutter widget tests — not mockups.*
 
 ---
 
@@ -144,7 +123,7 @@ Every variant gets its own golden PNG — locale, text scale, and viewport encod
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Posts a PR comment with a failure table, locale summary, and inline screenshot links. Updates the same comment on re-runs — no spam.
+Posts a PR comment with a failure table, locale summary, and inline screenshot links. Updates the same comment on re-runs.
 
 ### CLI reference
 
@@ -192,9 +171,7 @@ sweepTest(
 
 ## API reference
 
-<details>
-<summary><code>sweepTest()</code> parameters</summary>
-<br/>
+### `sweepTest()` parameters
 
 | Parameter | Type | Default | Description |
 |:--|:--|:--|:--|
@@ -207,11 +184,7 @@ sweepTest(
 | `arbDir` | `String?` | from config | Path to `.arb` translation files for missing-key analysis |
 | `captureScreenshots` | `bool` | `true` | Whether to save golden screenshots |
 
-</details>
-
-<details>
-<summary><code>ViewportPreset</code> built-in presets</summary>
-<br/>
+### `ViewportPreset` built-in presets
 
 | Preset | Dimensions | Use case |
 |:--|:--|:--|
@@ -221,8 +194,6 @@ sweepTest(
 | `ViewportPreset.tablet` | 768 x 1024 | iPad, Android tablets |
 
 Custom: `ViewportPreset(name: '1280x800', width: 1280, height: 800)`
-
-</details>
 
 ---
 
@@ -284,6 +255,4 @@ Tested against two popular open-source Flutter apps:
 
 ---
 
-<p align="center">
-  <sub>MIT License</sub>
-</p>
+*MIT License*
