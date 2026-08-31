@@ -1,0 +1,32 @@
+{
+  "@@locale": "en",
+  "welcomeTitle": "Welcome",
+  "@welcomeTitle": {
+    "description": "Title on the welcome screen"
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title on the settings screen"
+  },
+  "itemCount": "{count} items in your cart",
+  "@itemCount": {
+    "description": "Shopping cart item count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "greeting": "Hello, {name}! You have {count} notifications.",
+  "@greeting": {
+    "description": "Personalized greeting with notification count",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "@@locale": "de",
+  "welcomeTitle": "Willkommen",
+  "@welcomeTitle": {
+    "description": "Title on the welcome screen"
+  },
+  "itemCount": "{count} Artikel in Ihrem Warenkorb",
+  "@itemCount": {
+    "description": "Shopping cart item count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "greeting": "Hallo, {name}! Sie haben {count} Benachrichtigungen.",
+  "@greeting": {
+    "description": "Personalized greeting with notification count",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

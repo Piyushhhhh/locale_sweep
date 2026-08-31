@@ -1,0 +1,22 @@
+locales:
+  - en
+  - de
+  - ar
+  - ja
+
+text_scales:
+  - 1.0
+  - 2.0
+
+viewports:
+  - name: 375x667
+    width: 375
+    height: 667
+  - name: 393x852
+    width: 393
+    height: 852
+
+arb_dir: lib/l10n
+
+screenshot_dir: .locale_sweep/screenshots
+report_dir: .locale_sweep/reports

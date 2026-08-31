@@ -1,0 +1,20 @@
+{
+  "@@locale": "de",
+  "welcomeTitle": "Willkommen",
+  "@welcomeTitle": {
+    "description": "Title on the welcome screen"
+  },
+  "settingsTitle": "Einstellungen",
+  "@settingsTitle": {
+    "description": "Title on the settings screen"
+  },
+  "itemCount": "{count} Artikel in Ihrem Warenkorb",
+  "@itemCount": {
+    "description": "Shopping cart item count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

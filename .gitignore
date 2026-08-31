@@ -1,0 +1,12 @@
+.DS_Store
+.dart_tool/
+.idea/
+*.iml
+.pub-cache/
+.pub/
+/build/
+/coverage/
+pubspec.lock
+
+# LocaleSweep output
+.locale_sweep/

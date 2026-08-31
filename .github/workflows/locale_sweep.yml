@@ -1,0 +1,42 @@
+name: LocaleSweep
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  locale-sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run LocaleSweep
+        run: dart run locale_sweep run --github-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: locale-sweep-failures
+          path: |
+            .locale_sweep/
+            **/failures/**
+          retention-days: 14
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: locale-sweep-report
+          path: .locale_sweep/
+          retention-days: 14

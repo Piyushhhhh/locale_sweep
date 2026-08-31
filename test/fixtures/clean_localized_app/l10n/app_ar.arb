@@ -1,0 +1,20 @@
+{
+  "@@locale": "ar",
+  "welcomeTitle": "مرحبا",
+  "@welcomeTitle": {
+    "description": "Title on the welcome screen"
+  },
+  "settingsTitle": "الإعدادات",
+  "@settingsTitle": {
+    "description": "Title on the settings screen"
+  },
+  "itemCount": "{count} عناصر في سلة التسوق الخاصة بك",
+  "@itemCount": {
+    "description": "Shopping cart item count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}
