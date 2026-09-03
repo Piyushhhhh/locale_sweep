@@ -1,3 +1,7 @@
+## 0.1.7
+
+- Updated README with variantBody examples, SweepVariant API docs, untranslated detection docs.
+
 ## 0.1.6
 
 - Auto-published on 2026-09-03.
