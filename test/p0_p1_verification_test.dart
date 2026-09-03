@@ -84,6 +84,63 @@ report_dir: custom_reports
       expect(cfg.locales, isNotEmpty);
       expect(cfg.textScales, isNotEmpty);
     });
+
+    test('SweepConfig.load still parses valid keys alongside unknown ones', () {
+      final tmpDir = Directory.systemTemp.createTempSync('sweep_cfg_');
+      final cfgFile = File('${tmpDir.path}/locale_sweep.yaml');
+      cfgFile.writeAsStringSync('''
+locale: [en, de]
+text_scale: [1.0]
+locales: [en, ar]
+''');
+
+      final cfg = SweepConfig.load(cfgFile.path);
+      expect(cfg.locales, ['en', 'ar']);
+
+      tmpDir.deleteSync(recursive: true);
+    });
+
+    test('SweepConfig.load handles empty file', () {
+      final tmpDir = Directory.systemTemp.createTempSync('sweep_cfg_');
+      final cfgFile = File('${tmpDir.path}/locale_sweep.yaml');
+      cfgFile.writeAsStringSync('');
+
+      final cfg = SweepConfig.load(cfgFile.path);
+      expect(cfg.locales, ['en', 'de', 'ar', 'ja']);
+
+      tmpDir.deleteSync(recursive: true);
+    });
+
+    test('SweepConfig.load handles invalid YAML', () {
+      final tmpDir = Directory.systemTemp.createTempSync('sweep_cfg_');
+      final cfgFile = File('${tmpDir.path}/locale_sweep.yaml');
+      cfgFile.writeAsStringSync(': : : not valid yaml [[[');
+
+      final cfg = SweepConfig.load(cfgFile.path);
+      expect(cfg.locales, ['en', 'de', 'ar', 'ja']);
+
+      tmpDir.deleteSync(recursive: true);
+    });
+
+    test('SweepConfig.load handles wrong types gracefully', () {
+      final tmpDir = Directory.systemTemp.createTempSync('sweep_cfg_');
+      final cfgFile = File('${tmpDir.path}/locale_sweep.yaml');
+      cfgFile.writeAsStringSync('''
+locales: "just a string, not a list"
+text_scales: 42
+report_dir:
+  - should
+  - be
+  - string
+''');
+
+      final cfg = SweepConfig.load(cfgFile.path);
+      expect(cfg.locales, ['en', 'de', 'ar', 'ja']);
+      expect(cfg.textScales, [1.0, 2.0]);
+      expect(cfg.reportDir, '.locale_sweep/reports');
+
+      tmpDir.deleteSync(recursive: true);
+    });
   });
 
   final receivedVariants = <SweepVariant>[];
