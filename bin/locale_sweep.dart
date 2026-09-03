@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:args/args.dart';
 import 'package:path/path.dart' as p;
@@ -387,11 +388,14 @@ SweepVariant _parseVariantFromName(String testName, SweepConfig cfg) {
   var locale = 'en';
   var textScale = 1.0;
   var viewport = ViewportPreset.phone;
+  var brightness = Brightness.light;
 
   for (final part in parts) {
     final lower = part.toLowerCase();
     if (lower == 'rtl') continue;
-    if (lower.endsWith('x scale')) {
+    if (lower == 'dark') {
+      brightness = Brightness.dark;
+    } else if (lower.endsWith('x scale')) {
       textScale =
           double.tryParse(lower.replaceAll('x scale', '').trim()) ?? 1.0;
     } else if (part.contains('x')) {
@@ -408,7 +412,12 @@ SweepVariant _parseVariantFromName(String testName, SweepConfig cfg) {
     }
   }
 
-  return SweepVariant(locale: locale, textScale: textScale, viewport: viewport);
+  return SweepVariant(
+    locale: locale,
+    textScale: textScale,
+    viewport: viewport,
+    brightness: brightness,
+  );
 }
 
 Future<void> _postToGitHub(_ParsedReport report) async {

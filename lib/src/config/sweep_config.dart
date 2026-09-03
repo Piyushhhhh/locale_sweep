@@ -24,10 +24,14 @@ class SweepConfig {
   /// Path to ARB files for static translation analysis.
   final String? arbDir;
 
+  /// Whether to test both light and dark mode for each variant.
+  final bool darkMode;
+
   const SweepConfig({
     this.locales = const ['en', 'de', 'ar', 'ja'],
     this.textScales = const [1.0, 2.0],
     this.viewports = const [ViewportPreset.phone],
+    this.darkMode = false,
     this.screenshotDir = '.locale_sweep/screenshots',
     this.reportDir = '.locale_sweep/reports',
     this.arbDir,
@@ -37,6 +41,7 @@ class SweepConfig {
     'locales',
     'text_scales',
     'viewports',
+    'dark_mode',
     'screenshot_dir',
     'report_dir',
     'arb_dir',
@@ -81,6 +86,7 @@ class SweepConfig {
     _warnIfWrongType(path, yaml, 'locales', 'list');
     _warnIfWrongType(path, yaml, 'text_scales', 'list');
     _warnIfWrongType(path, yaml, 'viewports', 'list');
+    _warnIfWrongType(path, yaml, 'dark_mode', 'bool');
     _warnIfWrongType(path, yaml, 'screenshot_dir', 'string');
     _warnIfWrongType(path, yaml, 'report_dir', 'string');
     _warnIfWrongType(path, yaml, 'arb_dir', 'string');
@@ -91,6 +97,7 @@ class SweepConfig {
       textScales: _parseDoubleList(yaml['text_scales']) ?? const [1.0, 2.0],
       viewports:
           _parseViewports(yaml['viewports']) ?? const [ViewportPreset.phone],
+      darkMode: yaml['dark_mode'] == true,
       screenshotDir:
           _parseString(yaml['screenshot_dir']) ?? '.locale_sweep/screenshots',
       reportDir: _parseString(yaml['report_dir']) ?? '.locale_sweep/reports',
@@ -109,6 +116,7 @@ class SweepConfig {
     final ok = switch (expected) {
       'list' => value is YamlList,
       'string' => value is String,
+      'bool' => value is bool,
       _ => true,
     };
     if (!ok) {

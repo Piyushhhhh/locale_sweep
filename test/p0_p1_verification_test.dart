@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locale_sweep/locale_sweep.dart';
 
@@ -187,9 +187,9 @@ report_dir:
     test('generateMarkdown uses custom screenshot link builder', () {
       final summary = SweepRunSummary(
         results: [
-          SweepResult(
+          const SweepResult(
             flowName: 'test',
-            variant: const SweepVariant(
+            variant: SweepVariant(
               locale: 'en',
               textScale: 1.0,
               viewport: ViewportPreset.phone,
@@ -206,6 +206,96 @@ report_dir:
       );
       expect(md, contains('`test_en_393x852.png`'));
       expect(md, isNot(contains('![')));
+    });
+  });
+
+  sweepTest(
+    'dark_mode_test',
+    builder: () => const SizedBox(width: 100, height: 100),
+    locales: ['en'],
+    textScales: [1.0],
+    viewports: [ViewportPreset.phone],
+    darkMode: true,
+    captureScreenshots: false,
+    variantBody: (tester, variant) async {
+      final mq = MediaQuery.of(tester.element(find.byType(SizedBox)));
+      expect(mq.platformBrightness, variant.brightness);
+    },
+  );
+
+  test('P1: darkMode: true generates both light and dark variants', () {
+    final darkResults = sweepResults
+        .where((r) => r.flowName == 'dark_mode_test')
+        .toList();
+    expect(darkResults, hasLength(2));
+    expect(darkResults[0].variant.brightness, Brightness.light);
+    expect(darkResults[0].variant.isDark, isFalse);
+    expect(darkResults[0].variant.displayLabel, isNot(contains('Dark')));
+    expect(darkResults[1].variant.brightness, Brightness.dark);
+    expect(darkResults[1].variant.isDark, isTrue);
+    expect(darkResults[1].variant.displayLabel, contains('Dark'));
+  });
+
+  sweepTest(
+    'dark_mode_theme_test',
+    builder: () => Builder(
+      builder: (context) {
+        final brightness = Theme.of(context).brightness;
+        return Text(
+          brightness == Brightness.dark ? 'DARK' : 'LIGHT',
+          textDirection: TextDirection.ltr,
+        );
+      },
+    ),
+    locales: ['en'],
+    textScales: [1.0],
+    viewports: [ViewportPreset.phone],
+    darkMode: true,
+    captureScreenshots: false,
+    variantBody: (tester, variant) async {
+      final expected = variant.isDark ? 'DARK' : 'LIGHT';
+      expect(find.text(expected), findsOneWidget);
+    },
+  );
+
+  test('P1: darkMode wraps widget in Theme so Theme.of works', () {
+    final themeResults = sweepResults
+        .where((r) => r.flowName == 'dark_mode_theme_test')
+        .toList();
+    expect(themeResults, hasLength(2));
+    expect(themeResults.every((r) => r.passed), isTrue);
+  });
+
+  group('P1: SweepVariant dark mode labels', () {
+    test('light variant omits brightness from label', () {
+      const v = SweepVariant(
+        locale: 'en',
+        textScale: 1.0,
+        viewport: ViewportPreset.phone,
+      );
+      expect(v.label, 'en_393x852');
+      expect(v.displayLabel, 'EN · 393x852');
+    });
+
+    test('dark variant includes brightness in label', () {
+      const v = SweepVariant(
+        locale: 'en',
+        textScale: 1.0,
+        viewport: ViewportPreset.phone,
+        brightness: Brightness.dark,
+      );
+      expect(v.label, 'en_dark_393x852');
+      expect(v.displayLabel, 'EN · Dark · 393x852');
+    });
+
+    test('dark RTL variant shows both markers', () {
+      const v = SweepVariant(
+        locale: 'ar',
+        textScale: 2.0,
+        viewport: ViewportPreset.phone,
+        brightness: Brightness.dark,
+      );
+      expect(v.displayLabel, 'AR · RTL · Dark · 2.0x scale · 393x852');
     });
   });
 

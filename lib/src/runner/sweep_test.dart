@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../config/sweep_config.dart';
@@ -34,10 +34,16 @@ typedef SweepBody = Future<void> Function(WidgetTester tester);
 typedef SweepVariantBody =
     Future<void> Function(WidgetTester tester, SweepVariant variant);
 
-/// Generates `locales × textScales × viewports` test cases for [flowName].
+/// Generates `locales × textScales × viewports (× brightness)` test cases for [flowName].
 ///
 /// Each combination is run as a separate `testWidgets`, wrapped in
 /// [Directionality] and [MediaQuery] to simulate the target environment.
+///
+/// Set [darkMode] to `true` to test both light and dark for every variant.
+/// Pass [lightTheme] / [darkTheme] to wrap the widget in a [Theme] so
+/// `Theme.of(context)` works inside the builder — if omitted, default
+/// Material themes are used when [darkMode] is enabled.
+///
 /// Overflow errors are captured and fail the variant after the result
 /// is recorded (so screenshots exist before failure).
 void sweepTest(
@@ -49,6 +55,9 @@ void sweepTest(
   List<String>? locales,
   List<double>? textScales,
   List<ViewportPreset>? viewports,
+  bool? darkMode,
+  ThemeData? lightTheme,
+  ThemeData? darkTheme,
   String? arbDir,
   bool captureScreenshots = true,
   String screenshotDir = '.locale_sweep/screenshots',
@@ -58,15 +67,35 @@ void sweepTest(
   final effectiveLocales = locales ?? cfg.locales;
   final effectiveScales = textScales ?? cfg.textScales;
   final effectiveViewports = viewports ?? cfg.viewports;
+  final effectiveDarkMode = darkMode ?? cfg.darkMode;
   final effectiveArbDir = arbDir ?? cfg.arbDir;
+
+  final brightnesses = [
+    Brightness.light,
+    if (effectiveDarkMode) Brightness.dark,
+  ];
+
+  final resolvedLightTheme = effectiveDarkMode
+      ? (lightTheme ?? ThemeData.light())
+      : lightTheme;
+  final resolvedDarkTheme = effectiveDarkMode
+      ? (darkTheme ?? ThemeData.dark())
+      : darkTheme;
 
   final variants = <SweepVariant>[];
   for (final locale in effectiveLocales) {
     for (final scale in effectiveScales) {
       for (final vp in effectiveViewports) {
-        variants.add(
-          SweepVariant(locale: locale, textScale: scale, viewport: vp),
-        );
+        for (final brightness in brightnesses) {
+          variants.add(
+            SweepVariant(
+              locale: locale,
+              textScale: scale,
+              viewport: vp,
+              brightness: brightness,
+            ),
+          );
+        }
       }
     }
   }
@@ -114,14 +143,24 @@ void sweepTest(
         try {
           _configureTestEnvironment(tester, variant);
 
+          final themeData = variant.isDark
+              ? resolvedDarkTheme
+              : resolvedLightTheme;
+
+          Widget child = builder();
+          if (themeData != null) {
+            child = Theme(data: themeData, child: child);
+          }
+
           final widget = Directionality(
             textDirection: variant.textDirection,
             child: MediaQuery(
               data: MediaQueryData(
                 size: variant.viewport.size,
                 textScaler: TextScaler.linear(variant.textScale),
+                platformBrightness: variant.brightness,
               ),
-              child: builder(),
+              child: child,
             ),
           );
 
@@ -188,11 +227,13 @@ void _configureTestEnvironment(WidgetTester tester, SweepVariant variant) {
 
   tester.platformDispatcher.localeTestValue = ui.Locale(variant.locale);
   tester.platformDispatcher.textScaleFactorTestValue = variant.textScale;
+  tester.platformDispatcher.platformBrightnessTestValue = variant.brightness;
 
   addTearDown(() {
     view.resetPhysicalSize();
     view.resetDevicePixelRatio();
     tester.platformDispatcher.clearLocaleTestValue();
     tester.platformDispatcher.clearTextScaleFactorTestValue();
+    tester.platformDispatcher.clearPlatformBrightnessTestValue();
   });
 }

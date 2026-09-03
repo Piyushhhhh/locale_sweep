@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locale_sweep/locale_sweep.dart';
@@ -8,6 +9,7 @@ SweepResult _makeResult({
   String locale = 'en',
   double textScale = 1.0,
   ViewportPreset viewport = ViewportPreset.phone,
+  Brightness brightness = Brightness.light,
   bool passed = true,
   List<OverflowError> overflows = const [],
   List<ArbIssue> arbIssues = const [],
@@ -20,6 +22,7 @@ SweepResult _makeResult({
       locale: locale,
       textScale: textScale,
       viewport: viewport,
+      brightness: brightness,
     ),
     passed: passed,
     overflows: overflows,
@@ -52,6 +55,14 @@ void main() {
     test('contains RTL flag for Arabic', () {
       final result = _makeResult(locale: 'ar');
       expect(result.toJson()['rtl'], isTrue);
+    });
+
+    test('contains brightness field', () {
+      final light = _makeResult();
+      expect(light.toJson()['brightness'], 'light');
+
+      final dark = _makeResult(brightness: Brightness.dark);
+      expect(dark.toJson()['brightness'], 'dark');
     });
 
     test('contains overflow details', () {
