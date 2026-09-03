@@ -165,6 +165,50 @@ report_dir:
     expect(receivedVariants[1].isRtl, isTrue);
   });
 
+  sweepTest(
+    'skip_test',
+    builder: () => const SizedBox(width: 100, height: 100),
+    locales: ['en', 'de', 'ar', 'ja'],
+    textScales: [1.0],
+    viewports: [ViewportPreset.phone],
+    captureScreenshots: false,
+    skip: (variant) => variant.locale == 'ar' || variant.locale == 'ja',
+  );
+
+  test('P1: skip callback excludes matching variants', () {
+    final skipResults = sweepResults
+        .where((r) => r.flowName == 'skip_test')
+        .toList();
+    expect(skipResults, hasLength(2));
+    expect(skipResults.map((r) => r.variant.locale), ['en', 'de']);
+  });
+
+  group('P1: screenshotLinkBuilder', () {
+    test('generateMarkdown uses custom screenshot link builder', () {
+      final summary = SweepRunSummary(
+        results: [
+          SweepResult(
+            flowName: 'test',
+            variant: const SweepVariant(
+              locale: 'en',
+              textScale: 1.0,
+              viewport: ViewportPreset.phone,
+            ),
+            passed: false,
+            screenshotPath: '.locale_sweep/screenshots/test_en_393x852.png',
+            errorMessage: 'golden mismatch',
+          ),
+        ],
+      );
+      final md = ReportGenerator.generateMarkdown(
+        summary,
+        screenshotLinkBuilder: (path) => '`${path.split('/').last}`',
+      );
+      expect(md, contains('`test_en_393x852.png`'));
+      expect(md, isNot(contains('![')));
+    });
+  });
+
   group('P1: untranslated string detection', () {
     late Directory tmpDir;
 

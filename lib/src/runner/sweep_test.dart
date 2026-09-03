@@ -52,6 +52,7 @@ void sweepTest(
   String? arbDir,
   bool captureScreenshots = true,
   String screenshotDir = '.locale_sweep/screenshots',
+  bool Function(SweepVariant variant)? skip,
 }) {
   final cfg = config ?? const SweepConfig();
   final effectiveLocales = locales ?? cfg.locales;
@@ -91,7 +92,10 @@ void sweepTest(
     });
 
     for (final variant in variants) {
-      testWidgets('$flowName [${variant.displayLabel}]', (tester) async {
+      final shouldSkip = skip != null && skip(variant);
+      testWidgets('$flowName [${variant.displayLabel}]', skip: shouldSkip, (
+        tester,
+      ) async {
         final stopwatch = Stopwatch()..start();
         final overflowDetector = OverflowDetector();
         String? screenshotPath;

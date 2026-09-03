@@ -43,11 +43,19 @@ void main(List<String> args) async {
     apply(parser.commands['update']!);
   }
 
-  parser.commands['run']!.addFlag(
-    'github-pr',
-    help: 'Post results as a GitHub PR comment',
-    negatable: false,
-  );
+  parser.commands['run']!
+    ..addFlag(
+      'github-pr',
+      help: 'Post results as a GitHub PR comment',
+      negatable: false,
+    )
+    ..addOption(
+      'fail-on',
+      help:
+          'Comma-separated failure categories that cause a non-zero exit.\n'
+          'Categories: overflow, arb, golden, all (default: all)',
+      defaultsTo: 'all',
+    );
 
   final parsed = parser.parse(args);
 
@@ -74,6 +82,10 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
   final verbose = args['verbose'] as bool;
   final githubPr =
       args.options.contains('github-pr') && args['github-pr'] as bool;
+  final failOnRaw = args.options.contains('fail-on')
+      ? args['fail-on'] as String
+      : 'all';
+  final failOn = failOnRaw.split(',').map((s) => s.trim()).toSet();
 
   if (!Directory(testDir).existsSync()) {
     stderr.writeln('Error: Test directory "$testDir" not found.');
@@ -173,8 +185,9 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
     await _postToGitHub(report);
   }
 
-  if (!updateGoldens && report.failed > 0) {
-    exit(1);
+  if (!updateGoldens) {
+    final shouldFail = _shouldFail(report, failOn);
+    if (shouldFail) exit(1);
   }
 }
 
@@ -196,6 +209,20 @@ class _ParsedReport {
     required this.failed,
     required this.results,
   });
+}
+
+bool _shouldFail(_ParsedReport report, Set<String> failOn) {
+  if (failOn.contains('all')) return report.failed > 0;
+  if (failOn.contains('none')) return false;
+
+  for (final r in report.results) {
+    if (!r.passed) {
+      if (failOn.contains('overflow') && r.overflows.isNotEmpty) return true;
+      if (failOn.contains('arb') && r.arbIssues.isNotEmpty) return true;
+      if (failOn.contains('golden') && r.errorMessage != null) return true;
+    }
+  }
+  return false;
 }
 
 _ParsedReport? _loadResults(SweepConfig cfg) {
@@ -411,6 +438,8 @@ void _printUsage(ArgParser parser) {
   stdout.writeln('  locale_sweep run');
   stdout.writeln('  locale_sweep run --flows onboarding,checkout,settings');
   stdout.writeln('  locale_sweep run --github-pr');
+  stdout.writeln('  locale_sweep run --fail-on overflow,golden');
+  stdout.writeln('  locale_sweep run --fail-on none');
   stdout.writeln('  locale_sweep update');
   stdout.writeln('  locale_sweep update --flows onboarding');
 }

@@ -5,7 +5,14 @@ import 'sweep_result.dart';
 /// Generates Markdown and JSON reports from sweep results.
 class ReportGenerator {
   /// Generates a Markdown report with failure table and locale summary.
-  static String generateMarkdown(SweepRunSummary summary) {
+  ///
+  /// [screenshotLinkBuilder] customizes how screenshot paths are rendered.
+  /// Defaults to a Markdown image link. Pass a custom builder for CI
+  /// environments where local paths are not accessible.
+  static String generateMarkdown(
+    SweepRunSummary summary, {
+    String Function(String path)? screenshotLinkBuilder,
+  }) {
     final buf = StringBuffer();
 
     buf.writeln('# LocaleSweep Report');
@@ -64,7 +71,9 @@ class ReportGenerator {
 
         final detail = issues.join('<br>');
         final screenshotLink = r.screenshotPath != null
-            ? '![${r.variant.label}](${r.screenshotPath})'
+            ? (screenshotLinkBuilder != null
+                  ? screenshotLinkBuilder(r.screenshotPath!)
+                  : '![${r.variant.label}](${r.screenshotPath})')
             : '';
 
         buf.writeln(
