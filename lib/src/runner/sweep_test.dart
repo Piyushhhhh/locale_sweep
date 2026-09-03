@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
@@ -10,9 +12,16 @@ import '../detection/overflow_detector.dart';
 import '../report/sweep_result.dart';
 import 'sweep_variant.dart';
 
+/// Default directory where sweep results are written for CLI consumption.
+const sweepResultsDir = '.locale_sweep/results';
+
 final _allResults = <SweepResult>[];
 
-/// Returns all results recorded by [sweepTest] in this isolate.
+/// Returns all results recorded by [sweepTest] in this test isolate.
+///
+/// **Note:** Each test file runs in its own isolate, so this list only
+/// contains results from the current file. For cross-file aggregation,
+/// use the JSON files written to [sweepResultsDir] instead.
 List<SweepResult> get sweepResults => List.unmodifiable(_allResults);
 
 /// Clears all recorded sweep results.
@@ -69,7 +78,18 @@ void sweepTest(
     );
   }
 
+  final flowResults = <SweepResult>[];
+
   group('sweep: $flowName', () {
+    tearDownAll(() {
+      final dir = Directory(sweepResultsDir);
+      dir.createSync(recursive: true);
+      final file = File('${dir.path}/$flowName.json');
+      file.writeAsStringSync(
+        jsonEncode(flowResults.map((r) => r.toJson()).toList()),
+      );
+    });
+
     for (final variant in variants) {
       testWidgets('$flowName [${variant.displayLabel}]', (tester) async {
         final stopwatch = Stopwatch()..start();
@@ -144,6 +164,7 @@ void sweepTest(
         );
 
         _allResults.add(result);
+        flowResults.add(result);
 
         if (overflowDetector.errors.isNotEmpty) {
           fail(

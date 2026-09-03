@@ -207,6 +207,20 @@ class ArbIssue {
     required this.detail,
   });
 
+  Map<String, dynamic> toJson() => {
+    'type': type.name,
+    'locale': locale,
+    'key': key,
+    'detail': detail,
+  };
+
+  factory ArbIssue.fromJson(Map<String, dynamic> json) => ArbIssue(
+    type: ArbIssueType.values.byName(json['type'] as String),
+    locale: json['locale'] as String,
+    key: json['key'] as String?,
+    detail: json['detail'] as String,
+  );
+
   @override
   String toString() => detail;
 }

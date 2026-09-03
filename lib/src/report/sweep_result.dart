@@ -1,3 +1,4 @@
+import '../config/viewport_preset.dart';
 import '../detection/arb_analyzer.dart';
 import '../detection/overflow_detector.dart';
 import '../runner/sweep_variant.dart';
@@ -54,15 +55,41 @@ class SweepResult {
     'variant': variant.label,
     'locale': variant.locale,
     'textScale': variant.textScale,
-    'viewport': variant.viewport.name,
+    'viewportName': variant.viewport.name,
+    'viewportWidth': variant.viewport.width,
+    'viewportHeight': variant.viewport.height,
     'rtl': variant.isRtl,
     'passed': passed,
-    'overflows': overflows.map((e) => e.toString()).toList(),
-    'arbIssues': arbIssues.map((e) => e.toString()).toList(),
+    'overflows': overflows.map((e) => e.toJson()).toList(),
+    'arbIssues': arbIssues.map((e) => e.toJson()).toList(),
     'screenshot': screenshotPath,
     'error': errorMessage,
     'durationMs': duration.inMilliseconds,
   };
+
+  /// Deserializes a result from a JSON map (written by the test isolate).
+  factory SweepResult.fromJson(Map<String, dynamic> json) => SweepResult(
+    flowName: json['flow'] as String,
+    variant: SweepVariant(
+      locale: json['locale'] as String,
+      textScale: (json['textScale'] as num).toDouble(),
+      viewport: ViewportPreset(
+        name: json['viewportName'] as String,
+        width: (json['viewportWidth'] as num).toDouble(),
+        height: (json['viewportHeight'] as num).toDouble(),
+      ),
+    ),
+    passed: json['passed'] as bool,
+    overflows: (json['overflows'] as List)
+        .map((e) => OverflowError.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    arbIssues: (json['arbIssues'] as List)
+        .map((e) => ArbIssue.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    screenshotPath: json['screenshot'] as String?,
+    errorMessage: json['error'] as String?,
+    duration: Duration(milliseconds: json['durationMs'] as int? ?? 0),
+  );
 }
 
 /// Aggregates [SweepResult]s with summary statistics.

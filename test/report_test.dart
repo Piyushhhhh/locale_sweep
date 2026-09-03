@@ -43,7 +43,9 @@ void main() {
       expect(json['flow'], 'checkout');
       expect(json['locale'], 'de');
       expect(json['textScale'], 2.0);
-      expect(json['viewport'], '375x667');
+      expect(json['viewportName'], '375x667');
+      expect(json['viewportWidth'], 375.0);
+      expect(json['viewportHeight'], 667.0);
       expect(json['rtl'], isFalse);
     });
 
@@ -66,7 +68,9 @@ void main() {
 
       expect(json['passed'], isFalse);
       expect(json['overflows'], isA<List>());
-      expect((json['overflows'] as List).first, contains('42'));
+      final overflow =
+          (json['overflows'] as List).first as Map<String, dynamic>;
+      expect(overflow['pixels'], 42);
     });
 
     test('contains ARB issue details', () {
@@ -84,7 +88,9 @@ void main() {
       final json = result.toJson();
 
       expect(json['arbIssues'], isA<List>());
-      expect((json['arbIssues'] as List).first, contains('settingsTitle'));
+      final arbIssue =
+          (json['arbIssues'] as List).first as Map<String, dynamic>;
+      expect(arbIssue['key'], 'settingsTitle');
     });
 
     test('contains screenshot path when set', () {
@@ -209,10 +215,13 @@ void main() {
         expect(result['flow'], 'settings');
         expect(result['locale'], 'ar');
         expect(result['textScale'], 2.0);
-        expect(result['viewport'], '768x1024');
+        expect(result['viewportName'], '768x1024');
         expect(result['rtl'], isTrue);
         expect(result['overflows'], isA<List>());
         expect((result['overflows'] as List), isNotEmpty);
+        final overflow =
+            (result['overflows'] as List).first as Map<String, dynamic>;
+        expect(overflow['pixels'], 50);
       },
     );
   });

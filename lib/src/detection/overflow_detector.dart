@@ -65,6 +65,18 @@ class OverflowError {
 
   const OverflowError({required this.message, this.widget, this.pixels});
 
+  Map<String, dynamic> toJson() => {
+    'message': message,
+    'widget': widget,
+    'pixels': pixels,
+  };
+
+  factory OverflowError.fromJson(Map<String, dynamic> json) => OverflowError(
+    message: json['message'] as String,
+    widget: json['widget'] as String?,
+    pixels: (json['pixels'] as num?)?.toDouble(),
+  );
+
   @override
   String toString() {
     final parts = <String>['Overflow'];

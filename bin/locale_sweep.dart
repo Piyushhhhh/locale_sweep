@@ -150,7 +150,7 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
 
   await process.exitCode;
 
-  final report = _parseResults(stdoutBuf.toString(), cfg);
+  final report = _loadResults(cfg) ?? _parseResults(stdoutBuf.toString(), cfg);
   final reportPath = '$outputDir/report.md';
   final jsonPath = '$outputDir/report.json';
 
@@ -196,6 +196,68 @@ class _ParsedReport {
     required this.failed,
     required this.results,
   });
+}
+
+_ParsedReport? _loadResults(SweepConfig cfg) {
+  final resultsDir = Directory('.locale_sweep/results');
+  if (!resultsDir.existsSync()) return null;
+
+  final files = resultsDir
+      .listSync()
+      .whereType<File>()
+      .where((f) => f.path.endsWith('.json'))
+      .toList();
+
+  if (files.isEmpty) return null;
+
+  final sweepResults = <SweepResult>[];
+  for (final file in files) {
+    try {
+      final list = jsonDecode(file.readAsStringSync()) as List;
+      for (final item in list) {
+        sweepResults.add(SweepResult.fromJson(item as Map<String, dynamic>));
+      }
+    } catch (e) {
+      stderr.writeln('Warning: Failed to read ${file.path}: $e');
+    }
+  }
+
+  if (sweepResults.isEmpty) return null;
+
+  final runSummary = SweepRunSummary(results: sweepResults);
+  final markdown = ReportGenerator.generateMarkdown(runSummary);
+  final jsonStr = ReportGenerator.generateJson(runSummary);
+
+  final total = sweepResults.length;
+  final passed = sweepResults.where((r) => r.passed).length;
+  final failed = total - passed;
+
+  final overflowCount = sweepResults.fold<int>(
+    0,
+    (sum, r) => sum + r.overflows.length,
+  );
+  final arbCount = sweepResults.fold<int>(
+    0,
+    (sum, r) => sum + r.arbIssues.length,
+  );
+
+  final parts = <String>[];
+  if (failed > 0) parts.add('$failed/$total variants failed');
+  if (overflowCount > 0) parts.add('$overflowCount overflow(s)');
+  if (arbCount > 0) parts.add('$arbCount ARB issue(s)');
+  final summary = parts.isEmpty
+      ? 'All $total variants passed.'
+      : parts.join(', ');
+
+  return _ParsedReport(
+    markdown: markdown,
+    json: jsonStr,
+    summary: summary,
+    total: total,
+    passed: passed,
+    failed: failed,
+    results: sweepResults,
+  );
 }
 
 _ParsedReport _parseResults(String output, SweepConfig cfg) {
