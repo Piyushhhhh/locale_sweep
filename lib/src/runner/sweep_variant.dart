@@ -19,8 +19,21 @@ class SweepVariant {
     required this.viewport,
   });
 
+  static const _rtlLocales = {
+    'ar',
+    'he',
+    'fa',
+    'ur',
+    'ku',
+    'ps',
+    'yi',
+    'dv',
+    'sd',
+    'ug',
+  };
+
   /// Whether this locale uses right-to-left text direction.
-  bool get isRtl => locale == 'ar' || locale == 'he' || locale == 'fa';
+  bool get isRtl => _rtlLocales.contains(locale.split('_').first);
 
   TextDirection get textDirection =>
       isRtl ? TextDirection.rtl : TextDirection.ltr;

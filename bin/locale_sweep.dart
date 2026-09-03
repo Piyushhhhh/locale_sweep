@@ -4,6 +4,13 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:path/path.dart' as p;
 
+import 'package:locale_sweep/src/config/sweep_config.dart';
+import 'package:locale_sweep/src/report/github_reporter.dart';
+import 'package:locale_sweep/src/report/report_generator.dart';
+import 'package:locale_sweep/src/report/sweep_result.dart';
+import 'package:locale_sweep/src/runner/sweep_variant.dart';
+import 'package:locale_sweep/src/config/viewport_preset.dart';
+
 void main(List<String> args) async {
   final parser = ArgParser()
     ..addCommand('run')
@@ -21,11 +28,12 @@ void main(List<String> args) async {
       help: 'Test directory',
       defaultsTo: 'test/sweep',
     ),
+    (p) => p.addOption('output', abbr: 'o', help: 'Output directory'),
     (p) => p.addOption(
-      'output',
-      abbr: 'o',
-      help: 'Output directory',
-      defaultsTo: '.locale_sweep',
+      'config',
+      abbr: 'c',
+      help: 'Path to locale_sweep.yaml',
+      defaultsTo: 'locale_sweep.yaml',
     ),
     (p) => p.addFlag('verbose', abbr: 'v', negatable: false),
   ];
@@ -57,8 +65,11 @@ void main(List<String> args) async {
 }
 
 Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
+  final configPath = args['config'] as String;
+  final cfg = SweepConfig.load(configPath);
+
   final testDir = args['test-dir'] as String;
-  final outputDir = args['output'] as String;
+  final outputDir = args['output'] as String? ?? cfg.reportDir;
   final flows = args['flows'] as String?;
   final verbose = args['verbose'] as bool;
   final githubPr =
@@ -105,6 +116,9 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
 
   final mode = updateGoldens ? 'Updating goldens' : 'Running checks';
   stdout.writeln('LocaleSweep — $mode');
+  stdout.writeln(
+    'Config: ${File(configPath).existsSync() ? configPath : "defaults"}',
+  );
   stdout.writeln('${filesToRun.length} flow(s)');
   stdout.writeln();
 
@@ -136,7 +150,7 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
 
   await process.exitCode;
 
-  final report = _parseResults(stdoutBuf.toString());
+  final report = _parseResults(stdoutBuf.toString(), cfg);
   final reportPath = '$outputDir/report.md';
   final jsonPath = '$outputDir/report.json';
 
@@ -156,7 +170,7 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
   }
 
   if (githubPr) {
-    await _postToGitHub(report.markdown);
+    await _postToGitHub(report);
   }
 
   if (!updateGoldens && report.failed > 0) {
@@ -171,6 +185,7 @@ class _ParsedReport {
   final int total;
   final int passed;
   final int failed;
+  final List<SweepResult> results;
 
   _ParsedReport({
     required this.markdown,
@@ -179,10 +194,11 @@ class _ParsedReport {
     required this.total,
     required this.passed,
     required this.failed,
+    required this.results,
   });
 }
 
-_ParsedReport _parseResults(String output) {
+_ParsedReport _parseResults(String output, SweepConfig cfg) {
   final events = <Map<String, dynamic>>[];
   for (final line in output.split('\n')) {
     final trimmed = line.trim();
@@ -217,122 +233,104 @@ _ParsedReport _parseResults(String output) {
     }
   }
 
-  final sweepTests = <_TestResult>[];
+  final sweepResults = <SweepResult>[];
   for (final entry in testResults.entries) {
     final name = testNames[entry.key] ?? '';
     if (!name.contains('[')) continue;
-    sweepTests.add(
-      _TestResult(
-        name: name,
+
+    final variant = _parseVariantFromName(name, cfg);
+    final flowName = _parseFlowFromName(name);
+
+    sweepResults.add(
+      SweepResult(
+        flowName: flowName,
+        variant: variant,
         passed: entry.value,
-        error: testErrors[entry.key],
+        overflows: const [],
+        arbIssues: const [],
+        errorMessage: testErrors[entry.key],
+        duration: Duration.zero,
       ),
     );
   }
 
-  final total = sweepTests.length;
-  final passed = sweepTests.where((t) => t.passed).length;
+  final runSummary = SweepRunSummary(results: sweepResults);
+  final markdown = ReportGenerator.generateMarkdown(runSummary);
+  final jsonStr = ReportGenerator.generateJson(runSummary);
+
+  final total = sweepResults.length;
+  final passed = sweepResults.where((r) => r.passed).length;
   final failed = total - passed;
-  final failures = sweepTests.where((t) => !t.passed).toList();
-
-  final mdBuf = StringBuffer();
-  mdBuf.writeln('# LocaleSweep Report');
-  mdBuf.writeln();
-
-  if (failed == 0) {
-    mdBuf.writeln('**All $total variants passed.**');
-  } else {
-    mdBuf.writeln('**$failed/$total variants failed.**');
-    mdBuf.writeln();
-    mdBuf.writeln('## Failures');
-    mdBuf.writeln();
-    mdBuf.writeln('| Test | Error |');
-    mdBuf.writeln('|------|-------|');
-    for (final f in failures) {
-      final error = (f.error ?? 'failed')
-          .replaceAll('\n', ' ')
-          .replaceAll('|', '\\|');
-      final short = error.length > 120
-          ? '${error.substring(0, 120)}...'
-          : error;
-      mdBuf.writeln('| ${f.name} | $short |');
-    }
-  }
-  mdBuf.writeln();
-
-  final jsonData = {
-    'total': total,
-    'passed': passed,
-    'failed': failed,
-    'tests': sweepTests
-        .map((t) => {'name': t.name, 'passed': t.passed, 'error': t.error})
-        .toList(),
-  };
 
   final summary = failed == 0
       ? 'All $total variants passed.'
       : '$failed/$total variants failed.';
 
   return _ParsedReport(
-    markdown: mdBuf.toString(),
-    json: const JsonEncoder.withIndent('  ').convert(jsonData),
+    markdown: markdown,
+    json: jsonStr,
     summary: summary,
     total: total,
     passed: passed,
     failed: failed,
+    results: sweepResults,
   );
 }
 
-Future<void> _postToGitHub(String markdown) async {
-  final token = Platform.environment['GITHUB_TOKEN'];
-  final repo = Platform.environment['GITHUB_REPOSITORY'];
-  final ref = Platform.environment['GITHUB_REF'];
+String _parseFlowFromName(String testName) {
+  final match = RegExp(r'sweep: (\S+)').firstMatch(testName);
+  return match?.group(1) ?? testName;
+}
 
-  if (token == null || repo == null || ref == null) {
-    stderr.writeln(
-      'Warning: Cannot post to GitHub. Missing GITHUB_TOKEN, GITHUB_REPOSITORY, or GITHUB_REF.',
+SweepVariant _parseVariantFromName(String testName, SweepConfig cfg) {
+  final bracketMatch = RegExp(r'\[(.+)\]').firstMatch(testName);
+  if (bracketMatch == null) {
+    return const SweepVariant(
+      locale: 'en',
+      textScale: 1.0,
+      viewport: ViewportPreset.phone,
     );
-    return;
   }
 
-  final prMatch = RegExp(r'refs/pull/(\d+)/merge').firstMatch(ref);
-  if (prMatch == null) {
-    stderr.writeln('Warning: GITHUB_REF is not a PR ref: $ref');
-    return;
-  }
+  final label = bracketMatch.group(1)!;
+  final parts = label.split(' · ');
 
-  final prNumber = prMatch.group(1);
-  final uri = Uri.parse(
-    'https://api.github.com/repos/$repo/issues/$prNumber/comments',
-  );
-  final body =
-      '<!-- locale_sweep -->\n$markdown\n---\n*Generated by [LocaleSweep](https://github.com/AstrixelHQ/locale_sweep)*';
+  var locale = 'en';
+  var textScale = 1.0;
+  var viewport = ViewportPreset.phone;
 
-  final client = HttpClient();
-  try {
-    final request = await client.postUrl(uri);
-    request.headers.set('Authorization', 'Bearer $token');
-    request.headers.set('Accept', 'application/vnd.github.v3+json');
-    request.headers.set('Content-Type', 'application/json');
-    request.write(jsonEncode({'body': body}));
-    final response = await request.close();
-
-    if (response.statusCode == 201) {
-      stdout.writeln('Posted report to PR #$prNumber');
-    } else {
-      stderr.writeln('Failed to post to GitHub: ${response.statusCode}');
+  for (final part in parts) {
+    final lower = part.toLowerCase();
+    if (lower == 'rtl') continue;
+    if (lower.endsWith('x scale')) {
+      textScale =
+          double.tryParse(lower.replaceAll('x scale', '').trim()) ?? 1.0;
+    } else if (part.contains('x')) {
+      final dims = part.split('x');
+      if (dims.length == 2) {
+        final w = double.tryParse(dims[0]);
+        final h = double.tryParse(dims[1]);
+        if (w != null && h != null) {
+          viewport = ViewportPreset(name: part, width: w, height: h);
+        }
+      }
+    } else if (part.length <= 5) {
+      locale = part.toLowerCase();
     }
-  } finally {
-    client.close();
   }
+
+  return SweepVariant(locale: locale, textScale: textScale, viewport: viewport);
 }
 
-class _TestResult {
-  final String name;
-  final bool passed;
-  final String? error;
-
-  _TestResult({required this.name, required this.passed, this.error});
+Future<void> _postToGitHub(_ParsedReport report) async {
+  try {
+    final reporter = GitHubReporter.fromEnv();
+    final summary = SweepRunSummary(results: report.results);
+    await reporter.postComment(summary);
+    stdout.writeln('Posted report to PR #${reporter.prNumber}');
+  } on StateError catch (e) {
+    stderr.writeln('Warning: ${e.message}');
+  }
 }
 
 void _printUsage(ArgParser parser) {

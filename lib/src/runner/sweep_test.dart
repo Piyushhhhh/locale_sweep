@@ -21,6 +21,10 @@ void clearSweepResults() => _allResults.clear();
 /// Callback for interactions to run after the widget is pumped.
 typedef SweepBody = Future<void> Function(WidgetTester tester);
 
+/// Callback that also receives the current [SweepVariant] for locale-aware interactions.
+typedef SweepVariantBody =
+    Future<void> Function(WidgetTester tester, SweepVariant variant);
+
 /// Generates `locales × textScales × viewports` test cases for [flowName].
 ///
 /// Each combination is run as a separate `testWidgets`, wrapped in
@@ -31,6 +35,7 @@ void sweepTest(
   String flowName, {
   required Widget Function() builder,
   SweepBody? body,
+  SweepVariantBody? variantBody,
   SweepConfig? config,
   List<String>? locales,
   List<double>? textScales,
@@ -99,7 +104,10 @@ void sweepTest(
           await tester.pumpWidget(widget);
           await tester.pumpAndSettle();
 
-          if (body != null) {
+          if (variantBody != null) {
+            await variantBody(tester, variant);
+            await tester.pumpAndSettle();
+          } else if (body != null) {
             await body(tester);
             await tester.pumpAndSettle();
           }

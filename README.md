@@ -58,7 +58,7 @@ sweepTest(
 
 ```yaml
 dev_dependencies:
-  locale_sweep: ^0.1.4
+  locale_sweep: ^0.1.5
 ```
 
 ### 2. Write a sweep test

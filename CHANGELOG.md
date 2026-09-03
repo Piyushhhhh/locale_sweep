@@ -1,3 +1,11 @@
+## 0.1.5
+
+- Expanded RTL locale detection: 10 locales (ar, he, fa, ur, ku, ps, yi, dv, sd, ug) with subtag support (e.g. ar_EG).
+- CLI now reads `locale_sweep.yaml` config file via `--config` flag.
+- CLI uses `GitHubReporter` for PR comments instead of duplicate HTTP logic.
+- Added `variantBody` callback to `sweepTest()` for locale-aware test interactions.
+- Added `ArbIssueType.untranslated` detection for strings identical to the base locale.
+
 ## 0.1.4
 
 - Fixed Dart SDK constraint from ^3.11.5 to ^3.8.0 for broader compatibility.

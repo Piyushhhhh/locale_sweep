@@ -101,9 +101,23 @@ class ArbAnalyzer {
           continue;
         }
 
+        final value = arb[key];
+        final baseValue = baseArb[key];
+
+        if (value is String && baseValue is String && value == baseValue) {
+          issues.add(
+            ArbIssue(
+              type: ArbIssueType.untranslated,
+              locale: locale,
+              key: key,
+              detail:
+                  'Key "$key" in $locale is identical to $baseLocale (possibly untranslated)',
+            ),
+          );
+        }
+
         final expectedPlaceholders = basePlaceholders[key];
         if (expectedPlaceholders != null && expectedPlaceholders.isNotEmpty) {
-          final value = arb[key];
           if (value is String) {
             for (final ph in expectedPlaceholders) {
               if (!value.contains('{$ph}')) {
@@ -167,6 +181,9 @@ enum ArbIssueType {
 
   /// A placeholder (e.g. `{count}`) is in the base but missing in the target.
   placeholderMismatch,
+
+  /// A key's value is identical to the base locale (possibly untranslated).
+  untranslated,
 }
 
 /// A single issue found during ARB analysis.
