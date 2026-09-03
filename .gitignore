@@ -10,3 +10,6 @@ pubspec.lock
 
 # LocaleSweep output
 .locale_sweep/
+
+# Golden test failure diffs
+test/failures/
