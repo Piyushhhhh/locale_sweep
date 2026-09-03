@@ -185,7 +185,8 @@ arb_dir: test/fixtures/broken_localized_app/l10n
               pixels: 56,
             ),
           ],
-          screenshotPath: '.locale_sweep/screenshots/login_ar_2.0x_768x1024.png',
+          screenshotPath:
+              '.locale_sweep/screenshots/login_ar_2.0x_768x1024.png',
           errorMessage: 'Overflow in login AR layout',
         ),
         const SweepResult(
@@ -328,10 +329,7 @@ arb_dir: test/fixtures/broken_localized_app/l10n
         ),
         passed: false,
         overflows: [
-          OverflowError(
-            message: 'overflowed by 20 pixels',
-            pixels: 20,
-          ),
+          OverflowError(message: 'overflowed by 20 pixels', pixels: 20),
         ],
         arbIssues: [
           ArbIssue(
@@ -398,7 +396,11 @@ arb_dir: test/fixtures/broken_localized_app/l10n
 
     tearDownAll(() {
       final file = File('$sweepResultsDir/sink_test.json');
-      expect(file.existsSync(), isTrue, reason: 'Result JSON should be written');
+      expect(
+        file.existsSync(),
+        isTrue,
+        reason: 'Result JSON should be written',
+      );
 
       final list = jsonDecode(file.readAsStringSync()) as List;
       expect(list, hasLength(4)); // 2 locales × 2 brightness
