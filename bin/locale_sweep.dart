@@ -166,13 +166,16 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
   final report = _loadResults(cfg) ?? _parseResults(stdoutBuf.toString(), cfg);
   final reportPath = '$outputDir/report.md';
   final jsonPath = '$outputDir/report.json';
+  final htmlPath = '$outputDir/report.html';
 
   File(reportPath).writeAsStringSync(report.markdown);
   File(jsonPath).writeAsStringSync(report.json);
+  File(htmlPath).writeAsStringSync(report.html);
 
   stdout.writeln(report.summary);
   stdout.writeln();
-  stdout.writeln('Report: $reportPath');
+  stdout.writeln('Report: $htmlPath');
+  stdout.writeln('        $reportPath');
   stdout.writeln('JSON:   $jsonPath');
 
   if (updateGoldens) {
@@ -195,6 +198,7 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
 class _ParsedReport {
   final String markdown;
   final String json;
+  final String html;
   final String summary;
   final int total;
   final int passed;
@@ -204,6 +208,7 @@ class _ParsedReport {
   _ParsedReport({
     required this.markdown,
     required this.json,
+    required this.html,
     required this.summary,
     required this.total,
     required this.passed,
@@ -255,6 +260,7 @@ _ParsedReport? _loadResults(SweepConfig cfg) {
   final runSummary = SweepRunSummary(results: sweepResults);
   final markdown = ReportGenerator.generateMarkdown(runSummary);
   final jsonStr = ReportGenerator.generateJson(runSummary);
+  final htmlStr = ReportGenerator.generateHtml(runSummary);
 
   final total = sweepResults.length;
   final passed = sweepResults.where((r) => r.passed).length;
@@ -280,6 +286,7 @@ _ParsedReport? _loadResults(SweepConfig cfg) {
   return _ParsedReport(
     markdown: markdown,
     json: jsonStr,
+    html: htmlStr,
     summary: summary,
     total: total,
     passed: passed,
@@ -347,6 +354,7 @@ _ParsedReport _parseResults(String output, SweepConfig cfg) {
   final runSummary = SweepRunSummary(results: sweepResults);
   final markdown = ReportGenerator.generateMarkdown(runSummary);
   final jsonStr = ReportGenerator.generateJson(runSummary);
+  final htmlStr = ReportGenerator.generateHtml(runSummary);
 
   final total = sweepResults.length;
   final passed = sweepResults.where((r) => r.passed).length;
@@ -359,6 +367,7 @@ _ParsedReport _parseResults(String output, SweepConfig cfg) {
   return _ParsedReport(
     markdown: markdown,
     json: jsonStr,
+    html: htmlStr,
     summary: summary,
     total: total,
     passed: passed,

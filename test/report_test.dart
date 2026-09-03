@@ -319,4 +319,152 @@ void main() {
       expect(md, contains('| de | 0 | 1 | 1 | 0 |'));
     });
   });
+
+  group('ReportGenerator.generateHtml', () {
+    test('produces valid self-contained HTML', () {
+      final summary = SweepRunSummary(
+        results: [
+          _makeResult(locale: 'en', passed: true),
+          _makeResult(locale: 'de', passed: true),
+        ],
+      );
+
+      final html = ReportGenerator.generateHtml(summary);
+
+      expect(html, contains('<!DOCTYPE html>'));
+      expect(html, contains('<title>LocaleSweep Report</title>'));
+      expect(html, contains('<style>'));
+      expect(html, contains('<script>'));
+      expect(html, contains('</html>'));
+    });
+
+    test('contains summary cards with counts', () {
+      final summary = SweepRunSummary(
+        results: [
+          _makeResult(locale: 'en', passed: true),
+          _makeResult(
+            locale: 'de',
+            passed: false,
+            overflows: [const OverflowError(message: 'overflowed', pixels: 42)],
+          ),
+        ],
+      );
+
+      final html = ReportGenerator.generateHtml(summary);
+
+      expect(html, contains('summary-pass'));
+      expect(html, contains('summary-fail'));
+      expect(html, contains('>2<')); // total
+      expect(html, contains('>1<')); // passed / failed
+    });
+
+    test('contains flow sections with cards', () {
+      final summary = SweepRunSummary(
+        results: [
+          _makeResult(flow: 'checkout', locale: 'en', passed: true),
+          _makeResult(
+            flow: 'checkout',
+            locale: 'ar',
+            passed: false,
+            overflows: [const OverflowError(message: 'overflow', pixels: 10)],
+          ),
+        ],
+      );
+
+      final html = ReportGenerator.generateHtml(summary);
+
+      expect(html, contains('data-flow="checkout"'));
+      expect(html, contains('data-locale="en"'));
+      expect(html, contains('data-locale="ar"'));
+      expect(html, contains('badge-pass'));
+      expect(html, contains('badge-fail'));
+      expect(html, contains('badge-rtl'));
+      expect(html, contains('Overflow'));
+    });
+
+    test('contains locale filter buttons', () {
+      final summary = SweepRunSummary(
+        results: [
+          _makeResult(locale: 'en', passed: true),
+          _makeResult(locale: 'de', passed: true),
+          _makeResult(locale: 'ar', passed: true),
+        ],
+      );
+
+      final html = ReportGenerator.generateHtml(summary);
+
+      expect(html, contains('data-filter="locale" data-value="en"'));
+      expect(html, contains('data-filter="locale" data-value="de"'));
+      expect(html, contains('data-filter="locale" data-value="ar"'));
+      expect(html, contains('data-filter="status"'));
+    });
+
+    test('includes screenshot img tags when path present', () {
+      final summary = SweepRunSummary(
+        results: [
+          _makeResult(
+            locale: 'en',
+            passed: true,
+            screenshotPath: '.locale_sweep/screenshots/test_en.png',
+          ),
+        ],
+      );
+
+      final html = ReportGenerator.generateHtml(summary);
+
+      expect(html, contains('<img src='));
+      expect(html, contains('test_en.png'));
+    });
+
+    test('shows dark mode badge for dark variants', () {
+      final summary = SweepRunSummary(
+        results: [
+          _makeResult(locale: 'en', brightness: Brightness.dark, passed: true),
+        ],
+      );
+
+      final html = ReportGenerator.generateHtml(summary);
+
+      expect(html, contains('badge-dark'));
+      expect(html, contains('DARK'));
+      expect(html, contains('data-brightness="dark"'));
+    });
+
+    test('includes locale summary table', () {
+      final summary = SweepRunSummary(
+        results: [
+          _makeResult(locale: 'en', passed: true),
+          _makeResult(
+            locale: 'de',
+            passed: false,
+            overflows: [const OverflowError(message: 'overflow', pixels: 5)],
+          ),
+        ],
+      );
+
+      final html = ReportGenerator.generateHtml(summary);
+
+      expect(html, contains('<table>'));
+      expect(html, contains('EN'));
+      expect(html, contains('DE'));
+      expect(html, contains('row-fail'));
+    });
+
+    test('escapes HTML entities in error messages', () {
+      final summary = SweepRunSummary(
+        results: [
+          _makeResult(
+            locale: 'en',
+            passed: false,
+            errorMessage: '<script>alert("xss")</script>',
+          ),
+        ],
+      );
+
+      final html = ReportGenerator.generateHtml(summary);
+
+      expect(html, isNot(contains('<script>alert')));
+      expect(html, contains('&lt;script&gt;'));
+    });
+  });
 }
