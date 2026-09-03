@@ -1,3 +1,7 @@
+## 0.1.6
+
+- Auto-published on 2026-09-03.
+
 ## 0.1.5
 
 - Expanded RTL locale detection: 10 locales (ar, he, fa, ur, ku, ps, yi, dv, sd, ug) with subtag support (e.g. ar_EG).
