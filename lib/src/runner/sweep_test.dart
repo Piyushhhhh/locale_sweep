@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../config/sweep_config.dart';
 import '../config/viewport_preset.dart';
 import '../detection/arb_analyzer.dart';
+import '../detection/golden_diff.dart';
 import '../detection/overflow_detector.dart';
 import '../report/sweep_result.dart';
 import 'sweep_variant.dart';
@@ -62,6 +63,8 @@ void sweepTest(
   bool captureScreenshots = true,
   String screenshotDir = '.locale_sweep/screenshots',
   bool Function(SweepVariant variant)? skip,
+  double? tolerance,
+  String diffOutputDir = '.locale_sweep/diffs',
 }) {
   final cfg = config ?? const SweepConfig();
   final effectiveLocales = locales ?? cfg.locales;
@@ -69,6 +72,7 @@ void sweepTest(
   final effectiveViewports = viewports ?? cfg.viewports;
   final effectiveDarkMode = darkMode ?? cfg.darkMode;
   final effectiveArbDir = arbDir ?? cfg.arbDir;
+  final effectiveTolerance = tolerance ?? cfg.tolerance;
 
   final brightnesses = [
     Brightness.light,
@@ -131,6 +135,7 @@ void sweepTest(
         String? errorMessage;
         var passed = true;
         final arbIssues = <ArbIssue>[];
+        DiffResult? diffResult;
 
         if (arbReport != null) {
           arbIssues.addAll(
@@ -178,10 +183,29 @@ void sweepTest(
           if (captureScreenshots) {
             screenshotPath =
                 '$screenshotDir/${variant.screenshotPath(flowName)}';
-            await expectLater(
-              find.byType(Directionality).first,
-              matchesGoldenFile(screenshotPath),
-            );
+
+            SweepGoldenComparator? sweepComparator;
+            final originalComparator = goldenFileComparator;
+            if (effectiveTolerance > 0) {
+              sweepComparator = SweepGoldenComparator(
+                delegate: originalComparator,
+                tolerance: effectiveTolerance,
+                diffOutputDir: diffOutputDir,
+              );
+              goldenFileComparator = sweepComparator;
+            }
+
+            try {
+              await expectLater(
+                find.byType(Directionality).first,
+                matchesGoldenFile(screenshotPath),
+              );
+            } finally {
+              if (sweepComparator != null) {
+                goldenFileComparator = originalComparator;
+                diffResult = sweepComparator.lastDiffResult;
+              }
+            }
           }
         } catch (e) {
           passed = false;
@@ -204,6 +228,7 @@ void sweepTest(
           screenshotPath: screenshotPath,
           errorMessage: errorMessage,
           duration: stopwatch.elapsed,
+          diff: diffResult,
         );
 
         _allResults.add(result);

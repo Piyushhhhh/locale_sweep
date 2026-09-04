@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import '../config/viewport_preset.dart';
 import '../detection/arb_analyzer.dart';
+import '../detection/golden_diff.dart';
 import '../detection/overflow_detector.dart';
 import '../runner/sweep_variant.dart';
 
@@ -31,6 +32,9 @@ class SweepResult {
   /// Wall-clock time for this variant's test.
   final Duration duration;
 
+  /// Pixel-diff result when screenshot diffing is enabled.
+  final DiffResult? diff;
+
   const SweepResult({
     required this.flowName,
     required this.variant,
@@ -40,6 +44,7 @@ class SweepResult {
     this.screenshotPath,
     this.errorMessage,
     this.duration = Duration.zero,
+    this.diff,
   });
 
   /// Whether any overflow errors were captured.
@@ -68,6 +73,7 @@ class SweepResult {
     'screenshot': screenshotPath,
     'error': errorMessage,
     'durationMs': duration.inMilliseconds,
+    if (diff != null) 'diff': diff!.toJson(),
   };
 
   /// Deserializes a result from a JSON map (written by the test isolate).
@@ -95,6 +101,9 @@ class SweepResult {
     screenshotPath: json['screenshot'] as String?,
     errorMessage: json['error'] as String?,
     duration: Duration(milliseconds: json['durationMs'] as int? ?? 0),
+    diff: json['diff'] != null
+        ? DiffResult.fromJson(json['diff'] as Map<String, dynamic>)
+        : null,
   );
 }
 

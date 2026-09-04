@@ -48,8 +48,12 @@ class ReportGenerator {
 
       buf.writeln('### ${entry.key}');
       buf.writeln();
-      buf.writeln('| Locale | Scale | Viewport | Issue | Screenshot |');
-      buf.writeln('|--------|-------|----------|-------|------------|');
+      buf.writeln(
+        '| Locale | Scale | Viewport | Issue | Diff % | Screenshot |',
+      );
+      buf.writeln(
+        '|--------|-------|----------|-------|--------|------------|',
+      );
 
       for (final r in failures) {
         final issues = <String>[];
@@ -70,6 +74,9 @@ class ReportGenerator {
         }
 
         final detail = issues.join('<br>');
+        final diffCell = r.diff != null
+            ? '${r.diff!.diffPercent.toStringAsFixed(2)}%'
+            : '';
         final screenshotLink = r.screenshotPath != null
             ? (screenshotLinkBuilder != null
                   ? screenshotLinkBuilder(r.screenshotPath!)
@@ -77,7 +84,7 @@ class ReportGenerator {
             : '';
 
         buf.writeln(
-          '| ${r.variant.locale} | ${r.variant.textScale}x | ${r.variant.viewport.name} | $detail | $screenshotLink |',
+          '| ${r.variant.locale} | ${r.variant.textScale}x | ${r.variant.viewport.name} | $detail | $diffCell | $screenshotLink |',
         );
       }
       buf.writeln();
@@ -236,6 +243,13 @@ class ReportGenerator {
           '<div class="card-label">${_htmlEscape(r.variant.displayLabel)}</div>',
         );
 
+        // Diff badge
+        if (r.diff != null && r.diff!.diffPercent > 0) {
+          buf.writeln(
+            '<span class="badge badge-diff">${r.diff!.diffPercent.toStringAsFixed(2)}% diff</span>',
+          );
+        }
+
         // Issues
         if (r.hasIssues) {
           buf.writeln('<div class="card-issues">');
@@ -256,6 +270,19 @@ class ReportGenerator {
             buf.writeln('<div class="issue error">${_htmlEscape(msg)}</div>');
           }
           buf.writeln('</div>');
+        }
+
+        // Diff image link
+        if (r.diff?.diffImagePath != null) {
+          var diffPath = r.diff!.diffImagePath!;
+          if (screenshotBasePath.isNotEmpty &&
+              diffPath.startsWith(screenshotBasePath)) {
+            diffPath = diffPath.substring(screenshotBasePath.length);
+            if (diffPath.startsWith('/')) diffPath = diffPath.substring(1);
+          }
+          buf.writeln(
+            '<div class="card-diff"><a href="$diffPath" target="_blank">View diff image</a></div>',
+          );
         }
 
         buf.writeln('</div>'); // card-info
@@ -483,6 +510,19 @@ h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--tex
 .badge-fail { background: var(--fail-bg); color: var(--fail); }
 .badge-dark { background: var(--surface2); color: var(--text2); }
 .badge-rtl { background: var(--accent-bg); color: var(--accent); }
+.badge-diff { background: var(--warn-bg); color: var(--warn); }
+
+.card-diff {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+}
+
+.card-diff a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.card-diff a:hover { text-decoration: underline; }
 
 .card-label {
   font-size: 0.8rem;

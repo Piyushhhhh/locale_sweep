@@ -1,3 +1,31 @@
+## 0.3.0
+
+### Screenshot diffing
+- Added pixel-level diff computation between golden and actual screenshots via `GoldenDiffer.computeDiff()`.
+- Per-channel threshold of 2 absorbs anti-aliasing jitter — only real visual changes are flagged.
+- Added `tolerance` parameter to `sweepTest()` and `locale_sweep.yaml` — screenshots within the tolerance pass even when pixels differ. Default `0.0` (exact match).
+- `SweepGoldenComparator` wraps Flutter's `GoldenFileComparator`, intercepts golden comparisons, computes diff, and applies tolerance automatically.
+- 3-panel side-by-side diff images generated on mismatch: Golden | Actual | Diff (identical pixels dimmed, changed pixels highlighted in magenta).
+- Diff images saved to `.locale_sweep/diffs/` with `_diff.png` suffix.
+- `DiffResult` model with `diffPercent`, `changedPixels`, `totalPixels`, `diffImagePath` — full JSON serialization.
+
+### Diff data in reports
+- Markdown failure table gains a **Diff %** column showing the pixel-diff percentage for each failing variant.
+- HTML report shows a **diff badge** on cards with non-zero diff percentage.
+- HTML report includes a **"View diff image"** link to the 3-panel comparison PNG.
+- JSON report includes `diff` object in each result with full diff metrics.
+
+### Updated config
+- Added `tolerance` key to `locale_sweep.yaml` (number, 0.0–100.0).
+- Config validation now handles `num` type for tolerance field.
+- `SweepResult` gains `diff` field with full JSON round-trip support.
+- `sweepTest()` gains `tolerance` and `diffOutputDir` parameters.
+
+### Other
+- Exported `DiffResult`, `GoldenDiffer`, and `SweepGoldenComparator` from barrel file.
+- 35 new tests across 2 test files: `golden_diff_test.dart` (19 unit tests) and `screenshot_diff_e2e_test.dart` (16 end-to-end tests).
+- 202 tests total across 11 test files.
+
 ## 0.2.0
 
 ### Dark mode testing
