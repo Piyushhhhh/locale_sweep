@@ -53,10 +53,7 @@ void main() {
     test('identical images produce 0% diff', () async {
       final png = await _createSolidPng(100, 100, 0xFF2196F3);
 
-      final diff = await GoldenDiffer.computeDiff(
-        actual: png,
-        golden: png,
-      );
+      final diff = await GoldenDiffer.computeDiff(actual: png, golden: png);
 
       expect(diff.diffPercent, 0.0);
       expect(diff.changedPixels, 0);
@@ -67,10 +64,7 @@ void main() {
       final blue = await _createSolidPng(100, 100, 0xFF2196F3);
       final red = await _createSolidPng(100, 100, 0xFFE91E63);
 
-      final diff = await GoldenDiffer.computeDiff(
-        actual: red,
-        golden: blue,
-      );
+      final diff = await GoldenDiffer.computeDiff(actual: red, golden: blue);
 
       expect(diff.diffPercent, greaterThan(90));
       expect(diff.changedPixels, 10000);
@@ -82,10 +76,7 @@ void main() {
       final img1 = await _createSolidPng(100, 100, 0xFF808080);
       final img2 = await _createSolidPng(100, 100, 0xFF818181);
 
-      final diff = await GoldenDiffer.computeDiff(
-        actual: img1,
-        golden: img2,
-      );
+      final diff = await GoldenDiffer.computeDiff(actual: img1, golden: img2);
 
       // Per-channel diff is 1, below threshold of 2 → no pixels flagged
       expect(diff.diffPercent, 0.0);
@@ -96,10 +87,7 @@ void main() {
       final img1 = await _createSolidPng(100, 100, 0xFF808080);
       final img2 = await _createSolidPng(100, 100, 0xFF858585);
 
-      final diff = await GoldenDiffer.computeDiff(
-        actual: img1,
-        golden: img2,
-      );
+      final diff = await GoldenDiffer.computeDiff(actual: img1, golden: img2);
 
       // Per-channel diff is 5, above threshold of 2 → all pixels flagged
       expect(diff.diffPercent, 100.0);
@@ -110,10 +98,7 @@ void main() {
       final small = await _createSolidPng(50, 50, 0xFF2196F3);
       final large = await _createSolidPng(100, 100, 0xFF2196F3);
 
-      final diff = await GoldenDiffer.computeDiff(
-        actual: small,
-        golden: large,
-      );
+      final diff = await GoldenDiffer.computeDiff(actual: small, golden: large);
 
       expect(diff.diffPercent, 100.0);
     });
@@ -347,11 +332,9 @@ void main() {
       // Write to disk for manual inspection
       final reportDir = Directory('.locale_sweep/reports');
       reportDir.createSync(recursive: true);
-      File('${reportDir.path}/diff_e2e_report.html')
-          .writeAsStringSync(html);
+      File('${reportDir.path}/diff_e2e_report.html').writeAsStringSync(html);
       File('${reportDir.path}/diff_e2e_report.md').writeAsStringSync(md);
-      File('${reportDir.path}/diff_e2e_report.json')
-          .writeAsStringSync(jsonStr);
+      File('${reportDir.path}/diff_e2e_report.json').writeAsStringSync(jsonStr);
     });
   });
 
@@ -392,10 +375,7 @@ class _SimpleCard extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _SimpleCard({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SimpleCard({required this.title, required this.subtitle});
 
   static const bgColor = Color(0xFFE91E63);
 
@@ -447,10 +427,7 @@ class _SimpleCard extends StatelessWidget {
               Text(
                 subtitle,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF666666),
-                ),
+                style: const TextStyle(fontSize: 14, color: Color(0xFF666666)),
               ),
             ],
           ),
@@ -505,11 +482,7 @@ Future<Uint8List> _createSolidPng(int width, int height, int color) async {
   return pngData!.buffer.asUint8List();
 }
 
-Future<ui.Image> _imageFromPixels(
-  Uint8List rgba,
-  int width,
-  int height,
-) async {
+Future<ui.Image> _imageFromPixels(Uint8List rgba, int width, int height) async {
   final completer = Completer<ui.Image>();
   ui.decodeImageFromPixels(
     rgba,

@@ -258,9 +258,7 @@ class SweepGoldenComparator implements GoldenFileComparator {
   File _resolveGoldenFile(Uri golden) {
     if (_delegate is LocalFileComparator) {
       final basedir = _delegate.basedir;
-      return File(
-        path.join(path.fromUri(basedir), path.fromUri(golden)),
-      );
+      return File(path.join(path.fromUri(basedir), path.fromUri(golden)));
     }
     final resolved = _delegate.getTestUri(golden, null);
     if (resolved.scheme == 'file') return File.fromUri(resolved);
