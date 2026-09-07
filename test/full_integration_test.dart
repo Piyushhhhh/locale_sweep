@@ -60,11 +60,17 @@ void main() {
         expect(find.text(expectedBrightness), findsOneWidget);
 
         final mq = MediaQuery.of(tester.element(find.byType(Column)));
-        expect(mq.platformBrightness, variant.brightness);
+        expect(
+          mq.platformBrightness,
+          variant.isDark ? Brightness.dark : Brightness.light,
+        );
         expect(mq.textScaler.scale(1.0), variant.textScale);
 
         final theme = Theme.of(tester.element(find.byType(Column)));
-        expect(theme.brightness, variant.brightness);
+        expect(
+          theme.brightness,
+          variant.isDark ? Brightness.dark : Brightness.light,
+        );
       },
     );
 
@@ -87,7 +93,7 @@ void main() {
       final darkResults = results.where((r) => r.variant.isDark).toList();
       expect(darkResults, hasLength(5)); // 5 non-skipped dark
       for (final r in darkResults) {
-        expect(r.variant.brightness, Brightness.dark);
+        expect(r.variant.isDark, isTrue);
         expect(r.variant.displayLabel, contains('Dark'));
       }
 
@@ -166,7 +172,7 @@ arb_dir: test/fixtures/broken_localized_app/l10n
             locale: 'en',
             textScale: 1.0,
             viewport: ViewportPreset.phone,
-            brightness: Brightness.dark,
+            isDark: true,
           ),
           passed: true,
           screenshotPath: '.locale_sweep/screenshots/login_en_dark_393x852.png',
@@ -212,7 +218,7 @@ arb_dir: test/fixtures/broken_localized_app/l10n
             locale: 'de',
             textScale: 1.0,
             viewport: ViewportPreset.phone,
-            brightness: Brightness.dark,
+            isDark: true,
           ),
           passed: true,
         ),
@@ -325,7 +331,7 @@ arb_dir: test/fixtures/broken_localized_app/l10n
           locale: 'ar',
           textScale: 2.0,
           viewport: ViewportPreset.tablet,
-          brightness: Brightness.dark,
+          isDark: true,
         ),
         passed: false,
         overflows: [
@@ -349,7 +355,7 @@ arb_dir: test/fixtures/broken_localized_app/l10n
       expect(restored.flowName, 'checkout');
       expect(restored.variant.locale, 'ar');
       expect(restored.variant.textScale, 2.0);
-      expect(restored.variant.brightness, Brightness.dark);
+      expect(restored.variant.isDark, isTrue);
       expect(restored.variant.isDark, isTrue);
       expect(restored.variant.isRtl, isTrue);
       expect(restored.passed, isFalse);
@@ -375,7 +381,7 @@ arb_dir: test/fixtures/broken_localized_app/l10n
       expect(json['brightness'], 'light');
 
       final restored = SweepResult.fromJson(json);
-      expect(restored.variant.brightness, Brightness.light);
+      expect(restored.variant.isDark, isFalse);
       expect(restored.variant.isDark, isFalse);
     });
   });

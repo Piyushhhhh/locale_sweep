@@ -120,7 +120,7 @@ class ArbAnalyzer {
         if (expectedPlaceholders != null && expectedPlaceholders.isNotEmpty) {
           if (value is String) {
             for (final ph in expectedPlaceholders) {
-              if (!value.contains('{$ph}')) {
+              if (!_containsPlaceholder(value, ph)) {
                 issues.add(
                   ArbIssue(
                     type: ArbIssueType.placeholderMismatch,
@@ -138,6 +138,12 @@ class ArbAnalyzer {
     }
 
     return ArbReport(issues: issues);
+  }
+
+  /// Checks whether [value] contains [placeholder] in any valid ICU form:
+  /// `{name}`, `{name, plural, ...}`, `{name, select, ...}`, etc.
+  static bool _containsPlaceholder(String value, String placeholder) {
+    return RegExp('{$placeholder[},]').hasMatch(value);
   }
 
   static String? _extractLocale(String filename) {

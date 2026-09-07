@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locale_sweep/locale_sweep.dart';
@@ -9,7 +8,7 @@ SweepResult _makeResult({
   String locale = 'en',
   double textScale = 1.0,
   ViewportPreset viewport = ViewportPreset.phone,
-  Brightness brightness = Brightness.light,
+  bool isDark = false,
   bool passed = true,
   List<OverflowError> overflows = const [],
   List<ArbIssue> arbIssues = const [],
@@ -22,7 +21,7 @@ SweepResult _makeResult({
       locale: locale,
       textScale: textScale,
       viewport: viewport,
-      brightness: brightness,
+      isDark: isDark,
     ),
     passed: passed,
     overflows: overflows,
@@ -61,7 +60,7 @@ void main() {
       final light = _makeResult();
       expect(light.toJson()['brightness'], 'light');
 
-      final dark = _makeResult(brightness: Brightness.dark);
+      final dark = _makeResult(isDark: true);
       expect(dark.toJson()['brightness'], 'dark');
     });
 
@@ -418,9 +417,7 @@ void main() {
 
     test('shows dark mode badge for dark variants', () {
       final summary = SweepRunSummary(
-        results: [
-          _makeResult(locale: 'en', brightness: Brightness.dark, passed: true),
-        ],
+        results: [_makeResult(locale: 'en', isDark: true, passed: true)],
       );
 
       final html = ReportGenerator.generateHtml(summary);

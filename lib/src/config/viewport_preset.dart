@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 /// A named viewport size used to simulate layout dimensions in tests.
 ///
 /// These are not device emulations — they set the Flutter test view's
@@ -21,9 +19,6 @@ class ViewportPreset {
     required this.width,
     required this.height,
   });
-
-  /// Returns the viewport as a [Size].
-  Size get size => Size(width, height);
 
   /// 375x667 — compact phone (e.g. iPhone SE).
   static const phoneSmall = ViewportPreset(

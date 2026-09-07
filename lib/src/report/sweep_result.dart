@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import '../config/viewport_preset.dart';
 import '../detection/arb_analyzer.dart';
 import '../detection/golden_diff.dart';
@@ -65,7 +63,7 @@ class SweepResult {
     'viewportName': variant.viewport.name,
     'viewportWidth': variant.viewport.width,
     'viewportHeight': variant.viewport.height,
-    'brightness': variant.brightness.name,
+    'brightness': variant.isDark ? 'dark' : 'light',
     'rtl': variant.isRtl,
     'passed': passed,
     'overflows': overflows.map((e) => e.toJson()).toList(),
@@ -87,9 +85,7 @@ class SweepResult {
         width: (json['viewportWidth'] as num).toDouble(),
         height: (json['viewportHeight'] as num).toDouble(),
       ),
-      brightness: json['brightness'] == 'dark'
-          ? Brightness.dark
-          : Brightness.light,
+      isDark: json['brightness'] == 'dark',
     ),
     passed: json['passed'] as bool,
     overflows: (json['overflows'] as List)

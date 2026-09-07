@@ -62,9 +62,11 @@ void main() {
       );
     });
 
-    test('landscape presets produce correct Size', () {
-      expect(ViewportPreset.phoneLandscape.size, const Size(852, 393));
-      expect(ViewportPreset.tabletLandscape.size, const Size(1024, 768));
+    test('landscape presets produce correct dimensions', () {
+      expect(ViewportPreset.phoneLandscape.width, 852);
+      expect(ViewportPreset.phoneLandscape.height, 393);
+      expect(ViewportPreset.tabletLandscape.width, 1024);
+      expect(ViewportPreset.tabletLandscape.height, 768);
     });
 
     test('toString returns name', () {
