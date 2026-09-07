@@ -1,0 +1,45 @@
+{
+  "@@locale": "en",
+  "itemCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@itemCount": {
+    "description": "Item count with plural forms",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "genderGreeting": "{gender, select, male{Mr. {name}} female{Ms. {name}} other{Dear {name}}}",
+  "@genderGreeting": {
+    "description": "Gender-aware greeting",
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "simpleGreeting": "Hello, {name}!",
+  "@simpleGreeting": {
+    "description": "Simple greeting with placeholder",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "complexMessage": "{count, plural, =0{No messages for {name}} other{{count} messages for {name}}}",
+  "@complexMessage": {
+    "description": "Complex plural with nested placeholder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  }
+}

@@ -1,3 +1,37 @@
+# Changelog
+
+## 0.4.0
+
+### Parallel sharding
+- Added `--shards N --shard-index I` CLI flags for splitting variant matrices across CI jobs.
+- Flags pass through to `flutter test --total-shards/--shard-index` for native Flutter test sharding.
+- Added `merge` command to combine shard reports into a single HTML/Markdown/JSON report.
+- Merge supports `--github-pr` and `--fail-on` flags for CI integration.
+
+### Monorepo support
+- Added `scan` command to auto-discover packages containing `test/sweep/` directories.
+- Auto-discovery checks for `melos.yaml` first (parses package globs), then scans recursively.
+- Added `--packages apps/auth,apps/dashboard` flag to run sweep across multiple packages.
+- Per-package reports are generated and merged into a single aggregate report.
+
+### Landscape viewport presets
+- Added 4 landscape presets: `phoneSmallLandscape` (667x375), `phoneLandscape` (852x393), `phoneWideLandscape` (915x412), `tabletLandscape` (1024x768).
+
+### CLI improvements
+- Extracted CLI parsing logic into testable `cli_parser.dart` library.
+- Added real-time progress indicator — shows pass/fail counts during `flutter test` runs.
+- Added environment variable overrides for all config values (`LOCALE_SWEEP_LOCALES`, `LOCALE_SWEEP_TOLERANCE`, etc.) for CI without modifying YAML.
+- Added `setUp` callback to `sweepTest()` for loading custom fonts before the sweep group.
+
+### Bug fixes
+- Fixed ARB analyzer false positives on ICU plural/select syntax (`{count, plural, ...}`, `{gender, select, ...}`).
+- Fixed CLI crash when running `dart run locale_sweep` — extracted `DiffResult` and `OverflowError` into pure-Dart files to break transitive `dart:ui` dependency chain.
+- Removed `http` package dependency — `GitHubReporter` now uses `dart:io` `HttpClient` directly.
+
+### Other
+- 55 new tests across 3 test files: `cli_parser_test.dart` (43 tests), `parallel_monorepo_test.dart` (12 tests).
+- 283 tests total across 14 test files.
+
 ## 0.3.0
 
 ### Screenshot diffing

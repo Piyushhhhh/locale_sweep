@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locale_sweep/locale_sweep.dart';
 
@@ -50,7 +49,7 @@ void main() {
           .where((r) => r.variant.locale == 'ar')
           .toList();
       expect(rtlResults.first.variant.isRtl, isTrue);
-      expect(rtlResults.first.variant.textDirection, TextDirection.rtl);
+      expect(rtlResults.first.variant.isRtl, isTrue);
     });
   });
 

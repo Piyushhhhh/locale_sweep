@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locale_sweep/locale_sweep.dart';
 
@@ -13,7 +11,6 @@ void main() {
           viewport: ViewportPreset.phone,
         );
         expect(variant.isRtl, isTrue, reason: '$locale should be RTL');
-        expect(variant.textDirection, TextDirection.rtl);
       }
     });
 
@@ -25,7 +22,6 @@ void main() {
           viewport: ViewportPreset.phone,
         );
         expect(variant.isRtl, isFalse, reason: '$locale should be LTR');
-        expect(variant.textDirection, TextDirection.ltr);
       }
     });
 
@@ -82,10 +78,13 @@ void main() {
   });
 
   group('ViewportPreset', () {
-    test('size returns correct dimensions', () {
-      expect(ViewportPreset.phone.size, const Size(393, 852));
-      expect(ViewportPreset.phoneSmall.size, const Size(375, 667));
-      expect(ViewportPreset.tablet.size, const Size(768, 1024));
+    test('dimensions are correct', () {
+      expect(ViewportPreset.phone.width, 393);
+      expect(ViewportPreset.phone.height, 852);
+      expect(ViewportPreset.phoneSmall.width, 375);
+      expect(ViewportPreset.phoneSmall.height, 667);
+      expect(ViewportPreset.tablet.width, 768);
+      expect(ViewportPreset.tablet.height, 1024);
     });
 
     test('toString returns name', () {

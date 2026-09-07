@@ -1,0 +1,7 @@
+{
+  "@@locale": "ja",
+  "itemCount": "{count, plural, other{{count}個のアイテム}}",
+  "genderGreeting": "こんにちは！",
+  "simpleGreeting": "こんにちは！",
+  "complexMessage": "{count, plural, other{{count}件のメッセージ}}"
+}

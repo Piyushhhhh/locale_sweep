@@ -1,0 +1,7 @@
+{
+  "@@locale": "ar",
+  "itemCount": "{count, plural, =0{لا عناصر} =1{عنصر واحد} two{عنصران} few{{count} عناصر} many{{count} عنصرًا} other{{count} عنصر}}",
+  "genderGreeting": "{gender, select, male{السيد {name}} female{السيدة {name}} other{عزيزي {name}}}",
+  "simpleGreeting": "مرحبًا، {name}!",
+  "complexMessage": "{count, plural, =0{لا رسائل لـ {name}} other{{count} رسائل لـ {name}}}"
+}

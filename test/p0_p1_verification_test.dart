@@ -27,7 +27,7 @@ void main() {
           viewport: ViewportPreset.phone,
         );
         expect(v.isRtl, isTrue, reason: '$code should be RTL');
-        expect(v.textDirection, TextDirection.rtl);
+        // textDirection getter removed; isRtl is verified above
         expect(v.displayLabel, contains('RTL'));
       }
     });
@@ -219,7 +219,10 @@ report_dir:
     captureScreenshots: false,
     variantBody: (tester, variant) async {
       final mq = MediaQuery.of(tester.element(find.byType(SizedBox)));
-      expect(mq.platformBrightness, variant.brightness);
+      expect(
+        mq.platformBrightness,
+        variant.isDark ? Brightness.dark : Brightness.light,
+      );
     },
   );
 
@@ -228,10 +231,10 @@ report_dir:
         .where((r) => r.flowName == 'dark_mode_test')
         .toList();
     expect(darkResults, hasLength(2));
-    expect(darkResults[0].variant.brightness, Brightness.light);
+    expect(darkResults[0].variant.isDark, isFalse);
     expect(darkResults[0].variant.isDark, isFalse);
     expect(darkResults[0].variant.displayLabel, isNot(contains('Dark')));
-    expect(darkResults[1].variant.brightness, Brightness.dark);
+    expect(darkResults[1].variant.isDark, isTrue);
     expect(darkResults[1].variant.isDark, isTrue);
     expect(darkResults[1].variant.displayLabel, contains('Dark'));
   });
@@ -282,7 +285,7 @@ report_dir:
         locale: 'en',
         textScale: 1.0,
         viewport: ViewportPreset.phone,
-        brightness: Brightness.dark,
+        isDark: true,
       );
       expect(v.label, 'en_dark_393x852');
       expect(v.displayLabel, 'EN · Dark · 393x852');
@@ -293,7 +296,7 @@ report_dir:
         locale: 'ar',
         textScale: 2.0,
         viewport: ViewportPreset.phone,
-        brightness: Brightness.dark,
+        isDark: true,
       );
       expect(v.displayLabel, 'AR · RTL · Dark · 2.0x scale · 393x852');
     });

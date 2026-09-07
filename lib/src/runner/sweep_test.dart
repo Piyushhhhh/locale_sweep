@@ -65,6 +65,7 @@ void sweepTest(
   bool Function(SweepVariant variant)? skip,
   double? tolerance,
   String diffOutputDir = '.locale_sweep/diffs',
+  Future<void> Function()? setUp,
 }) {
   final cfg = config ?? const SweepConfig();
   final effectiveLocales = locales ?? cfg.locales;
@@ -74,10 +75,7 @@ void sweepTest(
   final effectiveArbDir = arbDir ?? cfg.arbDir;
   final effectiveTolerance = tolerance ?? cfg.tolerance;
 
-  final brightnesses = [
-    Brightness.light,
-    if (effectiveDarkMode) Brightness.dark,
-  ];
+  final darkModes = [false, if (effectiveDarkMode) true];
 
   final resolvedLightTheme = effectiveDarkMode
       ? (lightTheme ?? ThemeData.light())
@@ -90,13 +88,13 @@ void sweepTest(
   for (final locale in effectiveLocales) {
     for (final scale in effectiveScales) {
       for (final vp in effectiveViewports) {
-        for (final brightness in brightnesses) {
+        for (final isDark in darkModes) {
           variants.add(
             SweepVariant(
               locale: locale,
               textScale: scale,
               viewport: vp,
-              brightness: brightness,
+              isDark: isDark,
             ),
           );
         }
@@ -115,6 +113,10 @@ void sweepTest(
   final flowResults = <SweepResult>[];
 
   group('sweep: $flowName', () {
+    if (setUp != null) {
+      setUpAll(setUp);
+    }
+
     tearDownAll(() {
       final dir = Directory(sweepResultsDir);
       dir.createSync(recursive: true);
@@ -158,12 +160,16 @@ void sweepTest(
           }
 
           final widget = Directionality(
-            textDirection: variant.textDirection,
+            textDirection: variant.isRtl
+                ? TextDirection.rtl
+                : TextDirection.ltr,
             child: MediaQuery(
               data: MediaQueryData(
-                size: variant.viewport.size,
+                size: Size(variant.viewport.width, variant.viewport.height),
                 textScaler: TextScaler.linear(variant.textScale),
-                platformBrightness: variant.brightness,
+                platformBrightness: variant.isDark
+                    ? Brightness.dark
+                    : Brightness.light,
               ),
               child: child,
             ),
@@ -247,12 +253,14 @@ void sweepTest(
 
 void _configureTestEnvironment(WidgetTester tester, SweepVariant variant) {
   final view = tester.view;
-  view.physicalSize = variant.viewport.size;
+  view.physicalSize = Size(variant.viewport.width, variant.viewport.height);
   view.devicePixelRatio = 1.0;
 
   tester.platformDispatcher.localeTestValue = ui.Locale(variant.locale);
   tester.platformDispatcher.textScaleFactorTestValue = variant.textScale;
-  tester.platformDispatcher.platformBrightnessTestValue = variant.brightness;
+  tester.platformDispatcher.platformBrightnessTestValue = variant.isDark
+      ? ui.Brightness.dark
+      : ui.Brightness.light;
 
   addTearDown(() {
     view.resetPhysicalSize();

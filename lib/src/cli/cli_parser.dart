@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
 import '../config/sweep_config.dart';
 import '../config/viewport_preset.dart';
@@ -156,13 +155,13 @@ SweepVariant parseVariantFromName(String testName, SweepConfig cfg) {
   var locale = 'en';
   var textScale = 1.0;
   var viewport = ViewportPreset.phone;
-  var brightness = Brightness.light;
+  var isDark = false;
 
   for (final part in parts) {
     final lower = part.toLowerCase();
     if (lower == 'rtl') continue;
     if (lower == 'dark') {
-      brightness = Brightness.dark;
+      isDark = true;
     } else if (lower.endsWith('x scale')) {
       textScale =
           double.tryParse(lower.replaceAll('x scale', '').trim()) ?? 1.0;
@@ -184,9 +183,11 @@ SweepVariant parseVariantFromName(String testName, SweepConfig cfg) {
     locale: locale,
     textScale: textScale,
     viewport: viewport,
-    brightness: brightness,
+    isDark: isDark,
   );
 }
+
+ParsedReport mergeResults(List<SweepResult> results) => _buildReport(results);
 
 ParsedReport _buildReport(List<SweepResult> sweepResults) {
   final runSummary = SweepRunSummary(results: sweepResults);

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import '../config/viewport_preset.dart';
 
 /// A single combination of locale, text scale, viewport, and brightness to test.
@@ -13,14 +11,14 @@ class SweepVariant {
   /// Viewport dimensions.
   final ViewportPreset viewport;
 
-  /// Platform brightness (light or dark).
-  final Brightness brightness;
+  /// Whether to use dark mode.
+  final bool isDark;
 
   const SweepVariant({
     required this.locale,
     required this.textScale,
     required this.viewport,
-    this.brightness = Brightness.light,
+    this.isDark = false,
   });
 
   static const _rtlLocales = {
@@ -38,11 +36,6 @@ class SweepVariant {
 
   /// Whether this locale uses right-to-left text direction.
   bool get isRtl => _rtlLocales.contains(locale.split('_').first);
-
-  bool get isDark => brightness == Brightness.dark;
-
-  TextDirection get textDirection =>
-      isRtl ? TextDirection.rtl : TextDirection.ltr;
 
   String get label {
     final parts = <String>[locale];

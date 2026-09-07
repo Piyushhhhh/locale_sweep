@@ -1,0 +1,7 @@
+{
+  "@@locale": "de",
+  "itemCount": "{count, plural, =0{Keine Artikel} =1{1 Artikel} other{{count} Artikel}}",
+  "genderGreeting": "{gender, select, male{Herr {name}} female{Frau {name}} other{Sehr geehrte(r) {name}}}",
+  "simpleGreeting": "Hallo, {name}!",
+  "complexMessage": "{count, plural, =0{Keine Nachrichten für {name}} other{{count} Nachrichten für {name}}}"
+}

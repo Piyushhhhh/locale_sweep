@@ -62,7 +62,7 @@ sweepTest(
 
 ```yaml
 dev_dependencies:
-  locale_sweep: ^0.3.0
+  locale_sweep: ^0.4.0
 ```
 
 ### 2. Write a sweep test
@@ -91,6 +91,22 @@ dart run locale_sweep run
 ```
 
 > `run` never regenerates goldens. `update` does. This prevents CI from silently accepting broken layouts.
+
+### Custom fonts
+
+By default, Flutter tests use the Ahem font (all squares). Pass `setUp` to load your app's fonts so screenshots look real:
+
+```dart
+sweepTest(
+  'onboarding',
+  builder: () => const MyApp(),
+  setUp: () async {
+    final font = rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    final loader = FontLoader('Roboto')..addFont(font);
+    await loader.load();
+  },
+);
+```
 
 ---
 
@@ -187,6 +203,24 @@ report_dir: .locale_sweep/reports
 
 Any parameter passed directly to `sweepTest()` overrides the YAML config for that flow. Config validation warns about typos and type mismatches on stderr.
 
+### Environment variable overrides
+
+Override any config value in CI without modifying YAML:
+
+```bash
+LOCALE_SWEEP_LOCALES=en,de LOCALE_SWEEP_TOLERANCE=1.0 dart run locale_sweep run
+```
+
+| Variable | Overrides |
+|:--|:--|
+| `LOCALE_SWEEP_LOCALES` | `locales` (comma-separated) |
+| `LOCALE_SWEEP_TEXT_SCALES` | `text_scales` (comma-separated) |
+| `LOCALE_SWEEP_DARK_MODE` | `dark_mode` (`true`/`false`) |
+| `LOCALE_SWEEP_TOLERANCE` | `tolerance` |
+| `LOCALE_SWEEP_SCREENSHOT_DIR` | `screenshot_dir` |
+| `LOCALE_SWEEP_REPORT_DIR` | `report_dir` |
+| `LOCALE_SWEEP_ARB_DIR` | `arb_dir` |
+
 ---
 
 ## Reports
@@ -243,6 +277,46 @@ dart run locale_sweep run --fail-on all               # everything (default)
 
 Categories: `overflow`, `arb`, `golden`, `all`, `none`
 
+### Parallel sharding
+
+Split large variant matrices across CI jobs for faster runs:
+
+```yaml
+# GitHub Actions matrix strategy
+strategy:
+  matrix:
+    shard: [0, 1, 2]
+steps:
+  - run: dart run locale_sweep run --shards 3 --shard-index ${{ matrix.shard }} -o shard_${{ matrix.shard }}
+  - uses: actions/upload-artifact@v4
+    with:
+      name: shard-${{ matrix.shard }}
+      path: shard_${{ matrix.shard }}/
+
+# Merge step (needs: [test])
+- uses: actions/download-artifact@v4
+- run: dart run locale_sweep merge -i shard_0 -i shard_1 -i shard_2 --github-pr
+```
+
+The `merge` command combines shard reports into a single HTML/Markdown/JSON report and optionally posts to the PR.
+
+### Monorepo support
+
+Run sweep tests across multiple packages in a monorepo:
+
+```bash
+# Auto-discover packages with test/sweep/ directories
+dart run locale_sweep scan
+
+# Run sweep in specific packages
+dart run locale_sweep run --packages apps/auth,apps/dashboard
+
+# Combine with sharding
+dart run locale_sweep run --packages apps/auth,apps/dashboard --shards 4 --shard-index 0
+```
+
+Auto-discovery checks for `melos.yaml` first, then scans for packages containing a `test/sweep/` directory. Reports are generated per-package and merged into a single aggregate report.
+
 ### CLI reference
 
 ```bash
@@ -252,8 +326,12 @@ dart run locale_sweep run --github-pr                     # Post PR comment
 dart run locale_sweep run --fail-on overflow,golden       # Selective failure
 dart run locale_sweep run --config my_config.yaml         # Custom config
 dart run locale_sweep run --verbose                       # Print flutter test output
+dart run locale_sweep run --shards 3 --shard-index 0      # Parallel shard
+dart run locale_sweep run --packages apps/a,apps/b        # Monorepo
 dart run locale_sweep update                              # Regenerate baselines
 dart run locale_sweep update --flows settings             # Update specific flows
+dart run locale_sweep merge -i shard_0 -i shard_1         # Merge shard reports
+dart run locale_sweep scan                                # Discover monorepo packages
 ```
 
 ---
@@ -278,6 +356,7 @@ dart run locale_sweep update --flows settings             # Update specific flow
 | `tolerance` | `double?` | from config | Max pixel-diff % (0.0–100.0) |
 | `captureScreenshots` | `bool` | `true` | Save golden screenshots |
 | `diffOutputDir` | `String` | `.locale_sweep/diffs` | Directory for diff images |
+| `setUp` | `Future<void> Function()?` | `null` | Runs once before the sweep group (e.g. load custom fonts) |
 | `screenshotDir` | `String` | from config | Directory for golden screenshots |
 
 ### `ViewportPreset` built-ins
@@ -288,6 +367,10 @@ dart run locale_sweep update --flows settings             # Update specific flow
 | `phone` | 393 x 852 |
 | `phoneWide` | 412 x 915 |
 | `tablet` | 768 x 1024 |
+| `phoneSmallLandscape` | 667 x 375 |
+| `phoneLandscape` | 852 x 393 |
+| `phoneWideLandscape` | 915 x 412 |
+| `tabletLandscape` | 1024 x 768 |
 
 Custom: `ViewportPreset(name: '1280x800', width: 1280, height: 800)`
 
@@ -304,4 +387,4 @@ Custom: `ViewportPreset(name: '1280x800', width: 1280, height: 800)`
 
 ---
 
-245 tests across 12 files. [MIT License](https://opensource.org/licenses/MIT).
+283 tests across 14 files. [Full changelog](CHANGELOG.md). [MIT License](https://opensource.org/licenses/MIT).

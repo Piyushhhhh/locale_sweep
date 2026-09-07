@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:locale_sweep/locale_sweep.dart';
@@ -49,7 +48,7 @@ void main() {
       expect(v.viewport.width, 393);
       expect(v.viewport.height, 852);
       expect(v.textScale, 1.0);
-      expect(v.brightness, Brightness.light);
+      expect(v.isDark, isFalse);
     });
 
     test('parses RTL locale', () {
@@ -66,7 +65,7 @@ void main() {
         'sweep: settings [EN · Dark · 393x852]',
         cfg,
       );
-      expect(v.brightness, Brightness.dark);
+      expect(v.isDark, isTrue);
     });
 
     test('parses text scale', () {
@@ -84,7 +83,7 @@ void main() {
       );
       expect(v.locale, 'ar');
       expect(v.isRtl, isTrue);
-      expect(v.brightness, Brightness.dark);
+      expect(v.isDark, isTrue);
       expect(v.textScale, 2.0);
       expect(v.viewport.width, 768);
       expect(v.viewport.height, 1024);
@@ -101,7 +100,7 @@ void main() {
       expect(v.locale, 'en');
       expect(v.textScale, 1.0);
       expect(v.viewport.width, ViewportPreset.phone.width);
-      expect(v.brightness, Brightness.light);
+      expect(v.isDark, isFalse);
     });
 
     test('parses 1.5x scale', () {
@@ -325,7 +324,7 @@ void main() {
       expect(r.flowName, 'checkout');
       expect(r.variant.locale, 'ar');
       expect(r.variant.isRtl, isTrue);
-      expect(r.variant.brightness, Brightness.dark);
+      expect(r.variant.isDark, isTrue);
       expect(r.variant.textScale, 2.0);
       expect(r.variant.viewport.width, 768);
     });

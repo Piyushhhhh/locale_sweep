@@ -109,6 +109,149 @@ void main() {
       });
     });
 
+    group('ICU plural/select syntax', () {
+      late ArbReport report;
+
+      setUp(() {
+        report = ArbAnalyzer.analyze(
+          arbDir: 'test/fixtures/icu_localized_app/l10n',
+          locales: ['en', 'de', 'ar', 'ja'],
+        );
+      });
+
+      test('no false positives on correct ICU plural translations', () {
+        final deIssues = report.issues
+            .where(
+              (i) =>
+                  i.locale == 'de' &&
+                  i.type == ArbIssueType.placeholderMismatch,
+            )
+            .toList();
+        expect(
+          deIssues,
+          isEmpty,
+          reason:
+              'German uses correct ICU plural/select — no mismatches expected',
+        );
+      });
+
+      test('no false positives on Arabic ICU plural with many forms', () {
+        final arIssues = report.issues
+            .where(
+              (i) =>
+                  i.locale == 'ar' &&
+                  i.type == ArbIssueType.placeholderMismatch,
+            )
+            .toList();
+        expect(
+          arIssues,
+          isEmpty,
+          reason:
+              'Arabic uses correct ICU plural/select — no mismatches expected',
+        );
+      });
+
+      test('detects genuinely missing placeholders in ICU context', () {
+        final jaIssues = report.issues
+            .where(
+              (i) =>
+                  i.locale == 'ja' &&
+                  i.type == ArbIssueType.placeholderMismatch,
+            )
+            .toList();
+        expect(
+          jaIssues,
+          isNotEmpty,
+          reason: 'Japanese genderGreeting is missing {gender} and {name}',
+        );
+
+        final missingGender = jaIssues.where(
+          (i) => i.key == 'genderGreeting' && i.detail.contains('{gender}'),
+        );
+        expect(missingGender, isNotEmpty);
+
+        final missingName = jaIssues.where(
+          (i) => i.key == 'genderGreeting' && i.detail.contains('{name}'),
+        );
+        expect(missingName, isNotEmpty);
+      });
+
+      test(
+        'detects missing placeholder in simple string even with ICU fixture',
+        () {
+          final jaSimple = report.issues
+              .where(
+                (i) =>
+                    i.locale == 'ja' &&
+                    i.key == 'simpleGreeting' &&
+                    i.type == ArbIssueType.placeholderMismatch,
+              )
+              .toList();
+          expect(
+            jaSimple,
+            isNotEmpty,
+            reason: 'Japanese simpleGreeting is missing {name}',
+          );
+        },
+      );
+
+      test('detects missing {name} in complexMessage but not {count}', () {
+        final jaComplex = report.issues
+            .where(
+              (i) =>
+                  i.locale == 'ja' &&
+                  i.key == 'complexMessage' &&
+                  i.type == ArbIssueType.placeholderMismatch,
+            )
+            .toList();
+        expect(
+          jaComplex.length,
+          1,
+          reason: 'Only {name} is missing — {count} is present in ICU plural',
+        );
+        expect(jaComplex.first.detail, contains('{name}'));
+      });
+
+      test(
+        'handles {count, plural, ...} without flagging count as missing',
+        () {
+          final allCountIssues = report.issues
+              .where(
+                (i) =>
+                    i.type == ArbIssueType.placeholderMismatch &&
+                    i.detail.contains('{count}'),
+              )
+              .toList();
+          // Only Japanese complexMessage should be missing count-related issues
+          // German and Arabic should have zero count placeholder issues
+          final deArCount = allCountIssues
+              .where((i) => i.locale == 'de' || i.locale == 'ar')
+              .toList();
+          expect(deArCount, isEmpty);
+        },
+      );
+
+      test(
+        'handles {gender, select, ...} without flagging gender as missing',
+        () {
+          final deGender = report.issues
+              .where(
+                (i) =>
+                    i.locale == 'de' &&
+                    i.key == 'genderGreeting' &&
+                    i.type == ArbIssueType.placeholderMismatch,
+              )
+              .toList();
+          expect(
+            deGender,
+            isEmpty,
+            reason:
+                'German genderGreeting uses {gender, select, ...} — should not flag',
+          );
+        },
+      );
+    });
+
     group('edge cases', () {
       test('reports missingFile when directory does not exist', () {
         final report = ArbAnalyzer.analyze(
