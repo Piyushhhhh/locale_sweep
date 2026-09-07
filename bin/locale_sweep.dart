@@ -148,10 +148,38 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
 
   final stdoutBuf = StringBuffer();
   final stderrBuf = StringBuffer();
+  var passCount = 0;
+  var failCount = 0;
+  var lineBuf = StringBuffer();
 
   process.stdout.transform(utf8.decoder).listen((data) {
     stdoutBuf.write(data);
-    if (verbose) stdout.write(data);
+    if (verbose) {
+      stdout.write(data);
+    } else {
+      lineBuf.write(data);
+      final lines = lineBuf.toString().split('\n');
+      lineBuf = StringBuffer(lines.last);
+      for (var i = 0; i < lines.length - 1; i++) {
+        final line = lines[i].trim();
+        if (line.isEmpty || !line.startsWith('{')) continue;
+        try {
+          final event = jsonDecode(line) as Map<String, dynamic>;
+          if (event['type'] == 'testDone' && event['skipped'] != true) {
+            if (event['result'] == 'success') {
+              passCount++;
+            } else {
+              failCount++;
+            }
+            final total = passCount + failCount;
+            final status = failCount > 0
+                ? '$passCount passed, $failCount failed'
+                : '$passCount passed';
+            stdout.write('\r  $total variant(s) tested — $status');
+          }
+        } catch (_) {}
+      }
+    }
   });
   process.stderr.transform(utf8.decoder).listen((data) {
     stderrBuf.write(data);
@@ -159,6 +187,7 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
   });
 
   await process.exitCode;
+  if (!verbose && (passCount + failCount) > 0) stdout.writeln();
 
   final report =
       loadResults(cfg) ?? parseMachineOutput(stdoutBuf.toString(), cfg);

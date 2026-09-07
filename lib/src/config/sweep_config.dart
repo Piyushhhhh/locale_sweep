@@ -59,10 +59,10 @@ class SweepConfig {
   /// mismatches so that silent misconfiguration doesn't waste CI runs.
   static SweepConfig load([String path = 'locale_sweep.yaml']) {
     final file = File(path);
-    if (!file.existsSync()) return const SweepConfig();
+    if (!file.existsSync()) return _applyEnvOverrides(const SweepConfig());
 
     final content = file.readAsStringSync();
-    if (content.trim().isEmpty) return const SweepConfig();
+    if (content.trim().isEmpty) return _applyEnvOverrides(const SweepConfig());
 
     final dynamic parsed;
     try {
@@ -70,12 +70,12 @@ class SweepConfig {
     } catch (e) {
       stderr.writeln('Warning: Failed to parse $path: $e');
       stderr.writeln('Using default configuration.');
-      return const SweepConfig();
+      return _applyEnvOverrides(const SweepConfig());
     }
 
     if (parsed is! YamlMap) {
       stderr.writeln('Warning: $path is not a YAML map. Using defaults.');
-      return const SweepConfig();
+      return _applyEnvOverrides(const SweepConfig());
     }
 
     final yaml = parsed;
@@ -98,18 +98,20 @@ class SweepConfig {
     _warnIfWrongType(path, yaml, 'arb_dir', 'string');
     _warnIfWrongType(path, yaml, 'tolerance', 'num');
 
-    return SweepConfig(
-      locales:
-          _parseStringList(yaml['locales']) ?? const ['en', 'de', 'ar', 'ja'],
-      textScales: _parseDoubleList(yaml['text_scales']) ?? const [1.0, 2.0],
-      viewports:
-          _parseViewports(yaml['viewports']) ?? const [ViewportPreset.phone],
-      darkMode: yaml['dark_mode'] == true,
-      tolerance: _parseDouble(yaml['tolerance']) ?? 0.0,
-      screenshotDir:
-          _parseString(yaml['screenshot_dir']) ?? '.locale_sweep/screenshots',
-      reportDir: _parseString(yaml['report_dir']) ?? '.locale_sweep/reports',
-      arbDir: _parseString(yaml['arb_dir']),
+    return _applyEnvOverrides(
+      SweepConfig(
+        locales:
+            _parseStringList(yaml['locales']) ?? const ['en', 'de', 'ar', 'ja'],
+        textScales: _parseDoubleList(yaml['text_scales']) ?? const [1.0, 2.0],
+        viewports:
+            _parseViewports(yaml['viewports']) ?? const [ViewportPreset.phone],
+        darkMode: yaml['dark_mode'] == true,
+        tolerance: _parseDouble(yaml['tolerance']) ?? 0.0,
+        screenshotDir:
+            _parseString(yaml['screenshot_dir']) ?? '.locale_sweep/screenshots',
+        reportDir: _parseString(yaml['report_dir']) ?? '.locale_sweep/reports',
+        arbDir: _parseString(yaml['arb_dir']),
+      ),
     );
   }
 
@@ -133,6 +135,35 @@ class SweepConfig {
         'Warning: "$key" in $path should be a $expected, got ${value.runtimeType}.',
       );
     }
+  }
+
+  static SweepConfig _applyEnvOverrides(SweepConfig base) {
+    final env = Platform.environment;
+    return SweepConfig(
+      locales:
+          env['LOCALE_SWEEP_LOCALES']
+              ?.split(',')
+              .map((s) => s.trim())
+              .toList() ??
+          base.locales,
+      textScales:
+          env['LOCALE_SWEEP_TEXT_SCALES']
+              ?.split(',')
+              .map((s) => double.tryParse(s.trim()))
+              .whereType<double>()
+              .toList() ??
+          base.textScales,
+      viewports: base.viewports,
+      darkMode: env.containsKey('LOCALE_SWEEP_DARK_MODE')
+          ? env['LOCALE_SWEEP_DARK_MODE'] == 'true'
+          : base.darkMode,
+      tolerance: env.containsKey('LOCALE_SWEEP_TOLERANCE')
+          ? (double.tryParse(env['LOCALE_SWEEP_TOLERANCE']!) ?? base.tolerance)
+          : base.tolerance,
+      screenshotDir: env['LOCALE_SWEEP_SCREENSHOT_DIR'] ?? base.screenshotDir,
+      reportDir: env['LOCALE_SWEEP_REPORT_DIR'] ?? base.reportDir,
+      arbDir: env['LOCALE_SWEEP_ARB_DIR'] ?? base.arbDir,
+    );
   }
 
   static double? _parseDouble(dynamic value) {

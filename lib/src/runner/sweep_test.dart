@@ -65,6 +65,7 @@ void sweepTest(
   bool Function(SweepVariant variant)? skip,
   double? tolerance,
   String diffOutputDir = '.locale_sweep/diffs',
+  Future<void> Function()? setUp,
 }) {
   final cfg = config ?? const SweepConfig();
   final effectiveLocales = locales ?? cfg.locales;
@@ -115,6 +116,10 @@ void sweepTest(
   final flowResults = <SweepResult>[];
 
   group('sweep: $flowName', () {
+    if (setUp != null) {
+      setUpAll(setUp);
+    }
+
     tearDownAll(() {
       final dir = Directory(sweepResultsDir);
       dir.createSync(recursive: true);

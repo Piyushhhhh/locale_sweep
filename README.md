@@ -92,6 +92,22 @@ dart run locale_sweep run
 
 > `run` never regenerates goldens. `update` does. This prevents CI from silently accepting broken layouts.
 
+### Custom fonts
+
+By default, Flutter tests use the Ahem font (all squares). Pass `setUp` to load your app's fonts so screenshots look real:
+
+```dart
+sweepTest(
+  'onboarding',
+  builder: () => const MyApp(),
+  setUp: () async {
+    final font = rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    final loader = FontLoader('Roboto')..addFont(font);
+    await loader.load();
+  },
+);
+```
+
 ---
 
 ## Dark mode
@@ -187,6 +203,24 @@ report_dir: .locale_sweep/reports
 
 Any parameter passed directly to `sweepTest()` overrides the YAML config for that flow. Config validation warns about typos and type mismatches on stderr.
 
+### Environment variable overrides
+
+Override any config value in CI without modifying YAML:
+
+```bash
+LOCALE_SWEEP_LOCALES=en,de LOCALE_SWEEP_TOLERANCE=1.0 dart run locale_sweep run
+```
+
+| Variable | Overrides |
+|:--|:--|
+| `LOCALE_SWEEP_LOCALES` | `locales` (comma-separated) |
+| `LOCALE_SWEEP_TEXT_SCALES` | `text_scales` (comma-separated) |
+| `LOCALE_SWEEP_DARK_MODE` | `dark_mode` (`true`/`false`) |
+| `LOCALE_SWEEP_TOLERANCE` | `tolerance` |
+| `LOCALE_SWEEP_SCREENSHOT_DIR` | `screenshot_dir` |
+| `LOCALE_SWEEP_REPORT_DIR` | `report_dir` |
+| `LOCALE_SWEEP_ARB_DIR` | `arb_dir` |
+
 ---
 
 ## Reports
@@ -278,6 +312,7 @@ dart run locale_sweep update --flows settings             # Update specific flow
 | `tolerance` | `double?` | from config | Max pixel-diff % (0.0–100.0) |
 | `captureScreenshots` | `bool` | `true` | Save golden screenshots |
 | `diffOutputDir` | `String` | `.locale_sweep/diffs` | Directory for diff images |
+| `setUp` | `Future<void> Function()?` | `null` | Runs once before the sweep group (e.g. load custom fonts) |
 | `screenshotDir` | `String` | from config | Directory for golden screenshots |
 
 ### `ViewportPreset` built-ins
@@ -288,6 +323,10 @@ dart run locale_sweep update --flows settings             # Update specific flow
 | `phone` | 393 x 852 |
 | `phoneWide` | 412 x 915 |
 | `tablet` | 768 x 1024 |
+| `phoneSmallLandscape` | 667 x 375 |
+| `phoneLandscape` | 852 x 393 |
+| `phoneWideLandscape` | 915 x 412 |
+| `tabletLandscape` | 1024 x 768 |
 
 Custom: `ViewportPreset(name: '1280x800', width: 1280, height: 800)`
 
@@ -304,4 +343,4 @@ Custom: `ViewportPreset(name: '1280x800', width: 1280, height: 800)`
 
 ---
 
-245 tests across 12 files. [MIT License](https://opensource.org/licenses/MIT).
+264 tests across 13 files. [MIT License](https://opensource.org/licenses/MIT).

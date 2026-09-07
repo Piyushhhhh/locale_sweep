@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:http/http.dart' as http;
-
 import 'report_generator.dart';
 import 'sweep_result.dart';
 
@@ -49,9 +47,6 @@ class GitHubReporter {
   }
 
   /// Posts or updates a PR comment with the sweep results.
-  ///
-  /// Screenshot paths are converted to filenames since local paths
-  /// are not accessible from GitHub PR comments.
   Future<void> postComment(SweepRunSummary summary) async {
     final markdown = ReportGenerator.generateMarkdown(
       summary,
@@ -70,10 +65,10 @@ class GitHubReporter {
   }
 
   Future<int?> _findExistingComment() async {
-    final uri = Uri.parse(
-      'https://api.github.com/repos/$repo/issues/$prNumber/comments',
+    final response = await _request(
+      'GET',
+      '/repos/$repo/issues/$prNumber/comments',
     );
-    final response = await http.get(uri, headers: _headers);
 
     if (response.statusCode != 200) return null;
 
@@ -88,13 +83,10 @@ class GitHubReporter {
   }
 
   Future<void> _createComment(String body) async {
-    final uri = Uri.parse(
-      'https://api.github.com/repos/$repo/issues/$prNumber/comments',
-    );
-    final response = await http.post(
-      uri,
-      headers: _headers,
-      body: jsonEncode({'body': body}),
+    final response = await _request(
+      'POST',
+      '/repos/$repo/issues/$prNumber/comments',
+      body: {'body': body},
     );
 
     if (response.statusCode != 201) {
@@ -105,13 +97,10 @@ class GitHubReporter {
   }
 
   Future<void> _updateComment(int commentId, String body) async {
-    final uri = Uri.parse(
-      'https://api.github.com/repos/$repo/issues/comments/$commentId',
-    );
-    final response = await http.patch(
-      uri,
-      headers: _headers,
-      body: jsonEncode({'body': body}),
+    final response = await _request(
+      'PATCH',
+      '/repos/$repo/issues/comments/$commentId',
+      body: {'body': body},
     );
 
     if (response.statusCode != 200) {
@@ -121,9 +110,40 @@ class GitHubReporter {
     }
   }
 
-  Map<String, String> get _headers => {
-    'Authorization': 'Bearer $token',
-    'Accept': 'application/vnd.github.v3+json',
-    'Content-Type': 'application/json',
-  };
+  Future<_SimpleResponse> _request(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+  }) async {
+    final client = HttpClient();
+    try {
+      final uri = Uri.parse('https://api.github.com$path');
+      final request = await (switch (method) {
+        'GET' => client.getUrl(uri),
+        'POST' => client.postUrl(uri),
+        'PATCH' => client.patchUrl(uri),
+        _ => client.openUrl(method, uri),
+      });
+
+      request.headers.set('Authorization', 'Bearer $token');
+      request.headers.set('Accept', 'application/vnd.github.v3+json');
+      request.headers.set('Content-Type', 'application/json');
+
+      if (body != null) {
+        request.write(jsonEncode(body));
+      }
+
+      final response = await request.close();
+      final responseBody = await response.transform(utf8.decoder).join();
+      return _SimpleResponse(response.statusCode, responseBody);
+    } finally {
+      client.close();
+    }
+  }
+}
+
+class _SimpleResponse {
+  final int statusCode;
+  final String body;
+  _SimpleResponse(this.statusCode, this.body);
 }
