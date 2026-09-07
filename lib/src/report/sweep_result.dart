@@ -1,7 +1,7 @@
 import '../config/viewport_preset.dart';
 import '../detection/arb_analyzer.dart';
-import '../detection/golden_diff.dart';
-import '../detection/overflow_detector.dart';
+import '../detection/diff_result.dart';
+import '../detection/overflow_error.dart';
 import '../runner/sweep_variant.dart';
 
 /// The result of running a single sweep variant.
