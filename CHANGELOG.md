@@ -1,3 +1,9 @@
+## 0.4.2
+
+- **German umlaut fix** — screenshot gallery now renders proper umlauts (Übersetzungen, Prüfungen, Schlüssel, etc.) instead of ASCII fallbacks.
+- **Japanese translations** — gallery screenshots use real Japanese text instead of untranslated English strings. Added NotoSansJP font for CJK rendering.
+- **Version badge** — gallery screenshots updated from v0.1.1 to v0.4.1.
+
 ## 0.4.1
 
 - **Example app** — 3 sweep tests across 8 locales (en, de, ar, ja, ko, he, th, hi) with intentional bugs: missing ARB keys, placeholder mismatches, untranslated strings, overflow layouts, RTL issues.

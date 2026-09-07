@@ -13,6 +13,8 @@ Future<void> loadTestFonts() async {
 
   await _loadFont('NotoNaskhArabic', ['$fontDir/NotoNaskhArabic-Regular.ttf']);
 
+  await _loadFont('NotoSansJP', ['$fontDir/NotoSansJP-Regular.ttf']);
+
   await _loadFont('MaterialIcons', ['$fontDir/MaterialIcons-Regular.otf']);
 }
 
