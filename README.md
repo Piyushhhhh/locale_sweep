@@ -304,4 +304,4 @@ Custom: `ViewportPreset(name: '1280x800', width: 1280, height: 800)`
 
 ---
 
-202 tests across 11 files. [MIT License](https://opensource.org/licenses/MIT).
+245 tests across 12 files. [MIT License](https://opensource.org/licenses/MIT).
