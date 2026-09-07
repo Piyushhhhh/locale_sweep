@@ -49,9 +49,9 @@ class SettingsScreen extends StatelessWidget {
               child: Text(
                 'Upgrade to Pro for unlimited projects',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.deepPurple,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: Colors.deepPurple,
+                  fontWeight: FontWeight.w600,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.visible,
               ),

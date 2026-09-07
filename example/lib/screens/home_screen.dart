@@ -22,9 +22,9 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Organize your work, your way',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
             ),
             const SizedBox(height: 24),
             // BUG: Fixed-width container — fits English at 1x but German
@@ -39,9 +39,9 @@ class HomeScreen extends StatelessWidget {
               child: Text(
                 '5 tasks remaining',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.deepPurple,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: Colors.deepPurple,
+                  fontWeight: FontWeight.w600,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.visible,
               ),

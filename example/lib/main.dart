@@ -12,10 +12,7 @@ class TaskFlowApp extends StatelessWidget {
     return MaterialApp(
       title: 'TaskFlow',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: Colors.deepPurple,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorSchemeSeed: Colors.deepPurple, useMaterial3: true),
       darkTheme: ThemeData(
         colorSchemeSeed: Colors.deepPurple,
         brightness: Brightness.dark,

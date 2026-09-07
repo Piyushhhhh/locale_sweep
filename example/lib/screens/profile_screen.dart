@@ -15,10 +15,7 @@ class ProfileScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            const CircleAvatar(
-              radius: 40,
-              child: Icon(Icons.person, size: 48),
-            ),
+            const CircleAvatar(radius: 40, child: Icon(Icons.person, size: 48)),
             const SizedBox(height: 16),
             Text(
               'Hello, Sarah!',
@@ -27,9 +24,9 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Last login: September 3, 2026',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
             ),
             const SizedBox(height: 32),
             // BUG: Row with no Flexible — fits in English at 1x but
@@ -40,9 +37,9 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Delete account',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.red,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(color: Colors.red),
                 ),
                 const Spacer(),
                 const Icon(Icons.chevron_right),
