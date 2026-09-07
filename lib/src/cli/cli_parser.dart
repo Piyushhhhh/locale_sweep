@@ -187,6 +187,8 @@ SweepVariant parseVariantFromName(String testName, SweepConfig cfg) {
   );
 }
 
+ParsedReport mergeResults(List<SweepResult> results) => _buildReport(results);
+
 ParsedReport _buildReport(List<SweepResult> sweepResults) {
   final runSummary = SweepRunSummary(results: sweepResults);
   final markdown = ReportGenerator.generateMarkdown(runSummary);

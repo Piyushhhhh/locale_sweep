@@ -5,6 +5,7 @@ import 'package:args/args.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:locale_sweep/src/cli/cli_parser.dart';
+import 'package:locale_sweep/src/cli/package_discovery.dart';
 import 'package:locale_sweep/src/config/sweep_config.dart';
 import 'package:locale_sweep/src/report/github_reporter.dart';
 import 'package:locale_sweep/src/report/sweep_result.dart';
@@ -13,6 +14,8 @@ void main(List<String> args) async {
   final parser = ArgParser()
     ..addCommand('run')
     ..addCommand('update')
+    ..addCommand('merge')
+    ..addCommand('scan')
     ..addFlag('help', abbr: 'h', negatable: false);
 
   final sharedOptions = <void Function(ArgParser)>[
@@ -34,6 +37,15 @@ void main(List<String> args) async {
       defaultsTo: 'locale_sweep.yaml',
     ),
     (p) => p.addFlag('verbose', abbr: 'v', negatable: false),
+    (p) => p.addOption(
+      'shards',
+      help: 'Total number of parallel shards (for CI matrix)',
+    ),
+    (p) => p.addOption('shard-index', help: 'Index of this shard (0-based)'),
+    (p) => p.addOption(
+      'packages',
+      help: 'Comma-separated package directories (monorepo)',
+    ),
   ];
 
   for (final apply in sharedOptions) {
@@ -55,6 +67,36 @@ void main(List<String> args) async {
       defaultsTo: 'all',
     );
 
+  parser.commands['merge']!
+    ..addMultiOption(
+      'input',
+      abbr: 'i',
+      help: 'Shard output directories to merge',
+    )
+    ..addOption('output', abbr: 'o', help: 'Merged output directory')
+    ..addFlag(
+      'github-pr',
+      help: 'Post merged results as a GitHub PR comment',
+      negatable: false,
+    )
+    ..addOption(
+      'fail-on',
+      help: 'Failure categories for exit code',
+      defaultsTo: 'all',
+    );
+
+  parser.commands['scan']!
+    ..addOption(
+      'root',
+      help: 'Root directory to scan for packages',
+      defaultsTo: '.',
+    )
+    ..addOption(
+      'test-dir',
+      help: 'Test subdirectory name to look for',
+      defaultsTo: 'test/sweep',
+    );
+
   final parsed = parser.parse(args);
 
   if (parsed['help'] as bool || parsed.command == null) {
@@ -67,10 +109,136 @@ void main(List<String> args) async {
     await _runSweep(parsed.command!, updateGoldens: false);
   } else if (commandName == 'update') {
     await _runSweep(parsed.command!, updateGoldens: true);
+  } else if (commandName == 'merge') {
+    await _mergeShards(parsed.command!);
+  } else if (commandName == 'scan') {
+    _scanPackages(parsed.command!);
   }
 }
 
 Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
+  final packages = args['packages'] as String?;
+
+  if (packages != null) {
+    final pkgDirs = packages.split(',').map((s) => s.trim()).toList();
+    await _runMultiPackage(pkgDirs, args, updateGoldens: updateGoldens);
+    return;
+  }
+
+  await _runSinglePackage(args, updateGoldens: updateGoldens);
+}
+
+Future<void> _runMultiPackage(
+  List<String> pkgDirs,
+  ArgResults args, {
+  required bool updateGoldens,
+}) async {
+  final allResults = <SweepResult>[];
+  var anyFailed = false;
+
+  for (final pkgDir in pkgDirs) {
+    final absDir = p.isAbsolute(pkgDir)
+        ? pkgDir
+        : p.join(Directory.current.path, pkgDir);
+    if (!Directory(absDir).existsSync()) {
+      stderr.writeln(
+        'Warning: Package directory "$pkgDir" not found, skipping.',
+      );
+      continue;
+    }
+
+    final pkgName = p.basename(absDir);
+    stdout.writeln('━━━ Package: $pkgName ━━━');
+
+    final exitCode = await _runInDirectory(
+      absDir,
+      args,
+      updateGoldens: updateGoldens,
+    );
+    if (exitCode != 0) anyFailed = true;
+
+    final cfg = SweepConfig.load(p.join(absDir, args['config'] as String));
+    final outputDir = args['output'] as String? ?? cfg.reportDir;
+    final jsonPath = p.join(absDir, outputDir, 'report.json');
+    if (File(jsonPath).existsSync()) {
+      final data =
+          jsonDecode(File(jsonPath).readAsStringSync()) as Map<String, dynamic>;
+      final results = (data['results'] as List)
+          .map((e) => SweepResult.fromJson(e as Map<String, dynamic>))
+          .toList();
+      allResults.addAll(results);
+    }
+    stdout.writeln();
+  }
+
+  if (allResults.isNotEmpty) {
+    final mergedReport = mergeResults(allResults);
+    final outputDir = args['output'] as String? ?? '.locale_sweep/reports';
+    Directory(outputDir).createSync(recursive: true);
+    File('$outputDir/report.md').writeAsStringSync(mergedReport.markdown);
+    File('$outputDir/report.json').writeAsStringSync(mergedReport.json);
+    File('$outputDir/report.html').writeAsStringSync(mergedReport.html);
+
+    stdout.writeln('━━━ Merged Report ━━━');
+    stdout.writeln(mergedReport.summary);
+    stdout.writeln('Report: $outputDir/report.html');
+  }
+
+  if (anyFailed && !updateGoldens) exit(1);
+}
+
+Future<int> _runInDirectory(
+  String dir,
+  ArgResults args, {
+  required bool updateGoldens,
+}) async {
+  final testDir = args['test-dir'] as String;
+  final configPath = args['config'] as String;
+  final verbose = args['verbose'] as bool;
+  final shards = args['shards'] as String?;
+  final shardIndex = args['shard-index'] as String?;
+
+  final flutterArgs = <String>[
+    'test',
+    '--machine',
+    if (updateGoldens) '--update-goldens',
+    if (shards != null) '--total-shards=$shards',
+    if (shardIndex != null) '--shard-index=$shardIndex',
+    testDir,
+  ];
+
+  final process = await Process.start(
+    'flutter',
+    flutterArgs,
+    workingDirectory: dir,
+  );
+  final buf = StringBuffer();
+  process.stdout.transform(utf8.decoder).listen((d) => buf.write(d));
+  process.stderr.transform(utf8.decoder).listen((d) {
+    if (verbose) stderr.write(d);
+  });
+  final code = await process.exitCode;
+
+  final cfg = SweepConfig.load(p.join(dir, configPath));
+  final outputDir = args['output'] as String? ?? cfg.reportDir;
+  final fullOutputDir = p.join(dir, outputDir);
+  Directory(fullOutputDir).createSync(recursive: true);
+
+  final report =
+      loadResults(cfg, resultsPath: p.join(dir, '.locale_sweep/results')) ??
+      parseMachineOutput(buf.toString(), cfg);
+  File('$fullOutputDir/report.md').writeAsStringSync(report.markdown);
+  File('$fullOutputDir/report.json').writeAsStringSync(report.json);
+  File('$fullOutputDir/report.html').writeAsStringSync(report.html);
+  stdout.writeln('  ${report.summary}');
+
+  return code;
+}
+
+Future<void> _runSinglePackage(
+  ArgResults args, {
+  required bool updateGoldens,
+}) async {
   final configPath = args['config'] as String;
   final cfg = SweepConfig.load(configPath);
 
@@ -84,6 +252,8 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
       ? args['fail-on'] as String
       : 'all';
   final failOn = failOnRaw.split(',').map((s) => s.trim()).toSet();
+  final shards = args['shards'] as String?;
+  final shardIndex = args['shard-index'] as String?;
 
   if (!Directory(testDir).existsSync()) {
     stderr.writeln('Error: Test directory "$testDir" not found.');
@@ -129,6 +299,9 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
   stdout.writeln(
     'Config: ${File(configPath).existsSync() ? configPath : "defaults"}',
   );
+  if (shards != null) {
+    stdout.writeln('Shard ${shardIndex ?? 0} of $shards');
+  }
   stdout.writeln('${filesToRun.length} flow(s)');
   stdout.writeln();
 
@@ -136,6 +309,8 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
     'test',
     '--machine',
     if (updateGoldens) '--update-goldens',
+    if (shards != null) '--total-shards=$shards',
+    if (shardIndex != null) '--shard-index=$shardIndex',
     ...filesToRun.map((f) => f.path),
   ];
 
@@ -222,6 +397,91 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
   }
 }
 
+Future<void> _mergeShards(ArgResults args) async {
+  final inputDirs = args['input'] as List<String>;
+  final outputDir = args['output'] as String? ?? '.locale_sweep/reports';
+  final githubPr = args['github-pr'] as bool;
+  final failOnRaw = args['fail-on'] as String;
+  final failOn = failOnRaw.split(',').map((s) => s.trim()).toSet();
+
+  if (inputDirs.isEmpty) {
+    stderr.writeln(
+      'Error: --input is required. Provide shard output directories.',
+    );
+    stderr.writeln(
+      'Example: locale_sweep merge -i shard_0 -i shard_1 -i shard_2',
+    );
+    exit(1);
+  }
+
+  final allResults = <SweepResult>[];
+  for (final dir in inputDirs) {
+    final jsonPath = '$dir/report.json';
+    if (!File(jsonPath).existsSync()) {
+      stderr.writeln('Warning: No report.json in "$dir", skipping.');
+      continue;
+    }
+    try {
+      final data =
+          jsonDecode(File(jsonPath).readAsStringSync()) as Map<String, dynamic>;
+      final results = (data['results'] as List)
+          .map((e) => SweepResult.fromJson(e as Map<String, dynamic>))
+          .toList();
+      allResults.addAll(results);
+      stdout.writeln('  Loaded ${results.length} result(s) from $dir');
+    } catch (e) {
+      stderr.writeln('Warning: Failed to read $jsonPath: $e');
+    }
+  }
+
+  if (allResults.isEmpty) {
+    stderr.writeln('Error: No results found in any input directory.');
+    exit(1);
+  }
+
+  final report = mergeResults(allResults);
+  Directory(outputDir).createSync(recursive: true);
+  File('$outputDir/report.md').writeAsStringSync(report.markdown);
+  File('$outputDir/report.json').writeAsStringSync(report.json);
+  File('$outputDir/report.html').writeAsStringSync(report.html);
+
+  stdout.writeln();
+  stdout.writeln(
+    'Merged ${allResults.length} results from ${inputDirs.length} shard(s)',
+  );
+  stdout.writeln(report.summary);
+  stdout.writeln();
+  stdout.writeln('Report: $outputDir/report.html');
+  stdout.writeln('        $outputDir/report.md');
+  stdout.writeln('JSON:   $outputDir/report.json');
+
+  if (githubPr) {
+    await _postToGitHub(report);
+  }
+
+  final fail = shouldFail(report, failOn);
+  if (fail) exit(1);
+}
+
+void _scanPackages(ArgResults args) {
+  final root = args['root'] as String;
+  final testDir = args['test-dir'] as String;
+  final packages = discoverPackages(root, testDir: testDir);
+
+  if (packages.isEmpty) {
+    stdout.writeln('No packages with sweep tests found in "$root".');
+    stdout.writeln('Looking for packages containing a $testDir/ directory.');
+    return;
+  }
+
+  stdout.writeln('Found ${packages.length} package(s) with sweep tests:');
+  for (final pkg in packages) {
+    stdout.writeln('  $pkg');
+  }
+  stdout.writeln();
+  stdout.writeln('Run with: locale_sweep run --packages ${packages.join(",")}');
+}
+
 Future<void> _postToGitHub(ParsedReport report) async {
   try {
     final reporter = GitHubReporter.fromEnv();
@@ -241,6 +501,8 @@ void _printUsage(ArgParser parser) {
   stdout.writeln('Commands:');
   stdout.writeln('  run      Compare golden screenshots, fail broken variants');
   stdout.writeln('  update   Regenerate golden screenshots as new baselines');
+  stdout.writeln('  merge    Combine reports from parallel shards');
+  stdout.writeln('  scan     Discover packages with sweep tests (monorepo)');
   stdout.writeln();
   stdout.writeln('Options:');
   stdout.writeln(parser.commands['run']!.usage);
@@ -253,4 +515,14 @@ void _printUsage(ArgParser parser) {
   stdout.writeln('  locale_sweep run --fail-on none');
   stdout.writeln('  locale_sweep update');
   stdout.writeln('  locale_sweep update --flows onboarding');
+  stdout.writeln();
+  stdout.writeln('Parallel sharding:');
+  stdout.writeln('  locale_sweep run --shards 3 --shard-index 0');
+  stdout.writeln('  locale_sweep run --shards 3 --shard-index 1');
+  stdout.writeln('  locale_sweep run --shards 3 --shard-index 2');
+  stdout.writeln('  locale_sweep merge -i shard_0 -i shard_1 -i shard_2');
+  stdout.writeln();
+  stdout.writeln('Monorepo:');
+  stdout.writeln('  locale_sweep scan');
+  stdout.writeln('  locale_sweep run --packages apps/auth,apps/dashboard');
 }

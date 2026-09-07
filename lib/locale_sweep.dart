@@ -14,3 +14,4 @@ export 'src/detection/golden_diff.dart';
 export 'src/report/sweep_result.dart';
 export 'src/report/report_generator.dart';
 export 'src/cli/cli_parser.dart';
+export 'src/cli/package_discovery.dart';

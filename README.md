@@ -277,6 +277,46 @@ dart run locale_sweep run --fail-on all               # everything (default)
 
 Categories: `overflow`, `arb`, `golden`, `all`, `none`
 
+### Parallel sharding
+
+Split large variant matrices across CI jobs for faster runs:
+
+```yaml
+# GitHub Actions matrix strategy
+strategy:
+  matrix:
+    shard: [0, 1, 2]
+steps:
+  - run: dart run locale_sweep run --shards 3 --shard-index ${{ matrix.shard }} -o shard_${{ matrix.shard }}
+  - uses: actions/upload-artifact@v4
+    with:
+      name: shard-${{ matrix.shard }}
+      path: shard_${{ matrix.shard }}/
+
+# Merge step (needs: [test])
+- uses: actions/download-artifact@v4
+- run: dart run locale_sweep merge -i shard_0 -i shard_1 -i shard_2 --github-pr
+```
+
+The `merge` command combines shard reports into a single HTML/Markdown/JSON report and optionally posts to the PR.
+
+### Monorepo support
+
+Run sweep tests across multiple packages in a monorepo:
+
+```bash
+# Auto-discover packages with test/sweep/ directories
+dart run locale_sweep scan
+
+# Run sweep in specific packages
+dart run locale_sweep run --packages apps/auth,apps/dashboard
+
+# Combine with sharding
+dart run locale_sweep run --packages apps/auth,apps/dashboard --shards 4 --shard-index 0
+```
+
+Auto-discovery checks for `melos.yaml` first, then scans for packages containing a `test/sweep/` directory. Reports are generated per-package and merged into a single aggregate report.
+
 ### CLI reference
 
 ```bash
@@ -286,8 +326,12 @@ dart run locale_sweep run --github-pr                     # Post PR comment
 dart run locale_sweep run --fail-on overflow,golden       # Selective failure
 dart run locale_sweep run --config my_config.yaml         # Custom config
 dart run locale_sweep run --verbose                       # Print flutter test output
+dart run locale_sweep run --shards 3 --shard-index 0      # Parallel shard
+dart run locale_sweep run --packages apps/a,apps/b        # Monorepo
 dart run locale_sweep update                              # Regenerate baselines
 dart run locale_sweep update --flows settings             # Update specific flows
+dart run locale_sweep merge -i shard_0 -i shard_1         # Merge shard reports
+dart run locale_sweep scan                                # Discover monorepo packages
 ```
 
 ---
@@ -343,4 +387,4 @@ Custom: `ViewportPreset(name: '1280x800', width: 1280, height: 800)`
 
 ---
 
-264 tests across 13 files. [MIT License](https://opensource.org/licenses/MIT).
+283 tests across 14 files. [MIT License](https://opensource.org/licenses/MIT).
