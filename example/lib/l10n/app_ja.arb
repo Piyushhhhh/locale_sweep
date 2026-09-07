@@ -1,0 +1,17 @@
+{
+  "@@locale": "ja",
+  "appTitle": "TaskFlow",
+  "welcomeHeading": "TaskFlowへようこそ",
+  "welcomeSubtitle": "Organize your work, your way",
+  "settingsTitle": "通知設定",
+  "settingsEmailLabel": "メール通知",
+  "settingsEmailDesc": "Receive daily digest at {time}",
+  "settingsPushLabel": "プッシュ通知",
+  "settingsPushDesc": "Get instant alerts for {category} updates",
+  "taskCount": "{count} タスク残り",
+  "profileGreeting": "こんにちは、{userName}さん！",
+  "profileLastLogin": "Last login: {date}",
+  "logoutButton": "ログアウト",
+  "deleteAccount": "Delete account permanently",
+  "upgradePrompt": "Upgrade to Pro for unlimited projects"
+}

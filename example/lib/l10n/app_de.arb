@@ -1,0 +1,17 @@
+{
+  "@@locale": "de",
+  "appTitle": "TaskFlow",
+  "welcomeHeading": "Willkommen bei TaskFlow",
+  "welcomeSubtitle": "Organisieren Sie Ihre Arbeit, auf Ihre Weise",
+  "settingsTitle": "Benachrichtigungseinstellungen",
+  "settingsEmailLabel": "E-Mail-Benachrichtigungen",
+  "settingsEmailDesc": "Tägliche Zusammenfassung um {time} erhalten",
+  "settingsPushLabel": "Push-Benachrichtigungen",
+  "settingsPushDesc": "Sofortige Benachrichtigungen für Aktualisierungen erhalten",
+  "taskCount": "{count} Aufgaben verbleibend",
+  "profileGreeting": "Hallo, {userName}!",
+  "profileLastLogin": "Letzter Login: {date}",
+  "logoutButton": "Abmelden",
+  "deleteAccount": "Konto unwiderruflich löschen",
+  "upgradePrompt": "Upgraden Sie auf Pro für unbegrenzte Projekte"
+}

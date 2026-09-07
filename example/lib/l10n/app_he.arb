@@ -1,0 +1,15 @@
+{
+  "@@locale": "he",
+  "appTitle": "TaskFlow",
+  "welcomeHeading": "ברוכים הבאים ל-TaskFlow",
+  "welcomeSubtitle": "ארגנו את העבודה שלכם, בדרך שלכם",
+  "settingsTitle": "הגדרות התראות",
+  "settingsEmailLabel": "התראות דוא\"ל",
+  "settingsEmailDesc": "קבלת סיכום יומי בשעה {time}",
+  "settingsPushLabel": "התראות פוש",
+  "settingsPushDesc": "קבלת התראות מיידיות על עדכוני {category}",
+  "taskCount": "{count} משימות נותרו",
+  "profileGreeting": "שלום, {userName}!",
+  "logoutButton": "התנתקות",
+  "upgradePrompt": "שדרגו ל-Pro לפרויקטים ללא הגבלה"
+}

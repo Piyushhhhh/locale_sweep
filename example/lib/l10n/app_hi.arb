@@ -1,0 +1,16 @@
+{
+  "@@locale": "hi",
+  "appTitle": "TaskFlow",
+  "welcomeHeading": "TaskFlow में आपका स्वागत है",
+  "welcomeSubtitle": "अपने काम को अपने तरीके से व्यवस्थित करें",
+  "settingsTitle": "सूचना सेटिंग्स",
+  "settingsEmailLabel": "ईमेल सूचनाएं",
+  "settingsEmailDesc": "{time} पर दैनिक सारांश प्राप्त करें",
+  "settingsPushLabel": "पुश सूचनाएं",
+  "settingsPushDesc": "अपडेट के लिए तुरंत अलर्ट प्राप्त करें",
+  "taskCount": "{count} कार्य शेष",
+  "profileGreeting": "नमस्ते, {userName}!",
+  "profileLastLogin": "अंतिम लॉगिन: {date}",
+  "logoutButton": "लॉग आउट",
+  "deleteAccount": "खाता स्थायी रूप से हटाएं"
+}

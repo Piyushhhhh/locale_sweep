@@ -1,0 +1,17 @@
+{
+  "@@locale": "th",
+  "appTitle": "TaskFlow",
+  "welcomeHeading": "ยินดีต้อนรับสู่ TaskFlow",
+  "welcomeSubtitle": "จัดระเบียบงานของคุณในแบบของคุณ",
+  "settingsTitle": "ตั้งค่าการแจ้งเตือน",
+  "settingsEmailLabel": "การแจ้งเตือนทางอีเมล",
+  "settingsEmailDesc": "รับสรุปประจำวันเวลา {time}",
+  "settingsPushLabel": "การแจ้งเตือนแบบพุช",
+  "settingsPushDesc": "รับการแจ้งเตือนทันทีสำหรับการอัปเดต",
+  "taskCount": "งานที่เหลือ {count} รายการ",
+  "profileGreeting": "สวัสดี {userName}!",
+  "profileLastLogin": "เข้าสู่ระบบล่าสุด: {date}",
+  "logoutButton": "ออกจากระบบ",
+  "deleteAccount": "Delete account permanently",
+  "upgradePrompt": "Upgrade to Pro for unlimited projects"
+}

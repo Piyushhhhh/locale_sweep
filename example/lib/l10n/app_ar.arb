@@ -1,0 +1,14 @@
+{
+  "@@locale": "ar",
+  "appTitle": "TaskFlow",
+  "welcomeHeading": "مرحباً بك في TaskFlow",
+  "welcomeSubtitle": "نظّم عملك، بطريقتك",
+  "settingsTitle": "إعدادات الإشعارات",
+  "settingsEmailLabel": "إشعارات البريد الإلكتروني",
+  "settingsEmailDesc": "استلام الملخص اليومي في {time}",
+  "settingsPushLabel": "الإشعارات الفورية",
+  "settingsPushDesc": "احصل على تنبيهات فورية لتحديثات",
+  "taskCount": "{count} مهام متبقية",
+  "profileGreeting": "مرحباً، {userName}!",
+  "logoutButton": "تسجيل الخروج"
+}

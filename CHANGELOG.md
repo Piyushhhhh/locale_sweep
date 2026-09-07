@@ -1,101 +1,43 @@
+## 0.4.1
+
+- **Example app** — 3 sweep tests across 8 locales (en, de, ar, ja, ko, he, th, hi) with intentional bugs: missing ARB keys, placeholder mismatches, untranslated strings, overflow layouts, RTL issues.
+- **Arabic RTL screenshot** — README gallery now shows real Arabic text with mirrored layout instead of Config screen. Added NotoNaskhArabic font for proper rendering.
+- **pub.dev Example tab** — updated `example.dart` with 64-variant sweep (8 locales × 2 scales × 2 viewports × 2 brightness).
+
 ## 0.4.0
 
-### Parallel sharding
-- Added `--shards N --shard-index I` CLI flags for splitting variant matrices across CI jobs.
-- Flags pass through to `flutter test --total-shards/--shard-index` for native Flutter test sharding.
-- Added `merge` command to combine shard reports into a single HTML/Markdown/JSON report.
-- Merge supports `--github-pr` and `--fail-on` flags for CI integration.
-
-### Monorepo support
-- Added `scan` command to auto-discover packages containing `test/sweep/` directories.
-- Auto-discovery checks for `melos.yaml` first (parses package globs), then scans recursively.
-- Added `--packages apps/auth,apps/dashboard` flag to run sweep across multiple packages.
-- Per-package reports are generated and merged into a single aggregate report.
-
-### Landscape viewport presets
-- Added 4 landscape presets: `phoneSmallLandscape` (667x375), `phoneLandscape` (852x393), `phoneWideLandscape` (915x412), `tabletLandscape` (1024x768).
-
-### CLI improvements
-- Extracted CLI parsing logic into testable `cli_parser.dart` library.
-- Added real-time progress indicator — shows pass/fail counts during `flutter test` runs.
-- Added environment variable overrides for all config values (`LOCALE_SWEEP_LOCALES`, `LOCALE_SWEEP_TOLERANCE`, etc.) for CI without modifying YAML.
-- Added `setUp` callback to `sweepTest()` for loading custom fonts before the sweep group.
-
-### Bug fixes
-- Fixed ARB analyzer false positives on ICU plural/select syntax (`{count, plural, ...}`, `{gender, select, ...}`).
-- Fixed CLI crash when running `dart run locale_sweep` — extracted `DiffResult` and `OverflowError` into pure-Dart files to break transitive `dart:ui` dependency chain.
-- Removed `http` package dependency — `GitHubReporter` now uses `dart:io` `HttpClient` directly.
-
-### Other
-- 55 new tests across 3 test files: `cli_parser_test.dart` (43 tests), `parallel_monorepo_test.dart` (12 tests).
+- **Parallel sharding** — `--shards N --shard-index I` CLI flags split variant matrices across CI jobs. Passes through to `flutter test --total-shards/--shard-index`.
+- **Merge command** — `locale_sweep merge -i shard_0 -i shard_1` combines shard reports into a single HTML/Markdown/JSON report. Supports `--github-pr` and `--fail-on`.
+- **Monorepo support** — `locale_sweep scan` auto-discovers packages with `test/sweep/` dirs (checks `melos.yaml` first). `--packages apps/auth,apps/dashboard` runs sweep across multiple packages with merged reporting.
+- **Landscape presets** — 4 new presets: `phoneSmallLandscape` (667x375), `phoneLandscape` (852x393), `phoneWideLandscape` (915x412), `tabletLandscape` (1024x768).
+- **CLI progress** — real-time pass/fail counts during `flutter test` runs.
+- **Environment overrides** — `LOCALE_SWEEP_LOCALES`, `LOCALE_SWEEP_TOLERANCE`, etc. for CI without modifying YAML.
+- **setUp callback** — `sweepTest(setUp: () async { ... })` for loading custom fonts before the sweep group.
+- **CLI parser extracted** — testable `cli_parser.dart` library with 43 new tests.
+- **Bug fix** — ARB analyzer false positives on ICU plural/select syntax (`{count, plural, ...}`).
+- **Bug fix** — CLI crash from transitive `dart:ui` dependency. Extracted `DiffResult` and `OverflowError` into pure-Dart files.
+- **Bug fix** — removed `http` package dependency. `GitHubReporter` uses `dart:io` `HttpClient` directly.
 - 283 tests total across 14 test files.
 
 ## 0.3.0
 
-### Screenshot diffing
-- Added pixel-level diff computation between golden and actual screenshots via `GoldenDiffer.computeDiff()`.
-- Per-channel threshold of 2 absorbs anti-aliasing jitter — only real visual changes are flagged.
-- Added `tolerance` parameter to `sweepTest()` and `locale_sweep.yaml` — screenshots within the tolerance pass even when pixels differ. Default `0.0` (exact match).
-- `SweepGoldenComparator` wraps Flutter's `GoldenFileComparator`, intercepts golden comparisons, computes diff, and applies tolerance automatically.
-- 3-panel side-by-side diff images generated on mismatch: Golden | Actual | Diff (identical pixels dimmed, changed pixels highlighted in magenta).
-- Diff images saved to `.locale_sweep/diffs/` with `_diff.png` suffix.
-- `DiffResult` model with `diffPercent`, `changedPixels`, `totalPixels`, `diffImagePath` — full JSON serialization.
-
-### Diff data in reports
-- Markdown failure table gains a **Diff %** column showing the pixel-diff percentage for each failing variant.
-- HTML report shows a **diff badge** on cards with non-zero diff percentage.
-- HTML report includes a **"View diff image"** link to the 3-panel comparison PNG.
-- JSON report includes `diff` object in each result with full diff metrics.
-
-### Updated config
-- Added `tolerance` key to `locale_sweep.yaml` (number, 0.0–100.0).
-- Config validation now handles `num` type for tolerance field.
-- `SweepResult` gains `diff` field with full JSON round-trip support.
-- `sweepTest()` gains `tolerance` and `diffOutputDir` parameters.
-
-### Other
-- Exported `DiffResult`, `GoldenDiffer`, and `SweepGoldenComparator` from barrel file.
-- 35 new tests across 2 test files: `golden_diff_test.dart` (19 unit tests) and `screenshot_diff_e2e_test.dart` (16 end-to-end tests).
+- **Screenshot diffing** — pixel-level diff via `GoldenDiffer.computeDiff()`. Per-channel threshold of 2 absorbs anti-aliasing jitter.
+- **Tolerance** — `tolerance` parameter on `sweepTest()` and in `locale_sweep.yaml`. Screenshots within tolerance pass even when pixels differ.
+- **Diff images** — 3-panel side-by-side (Golden | Actual | Diff) saved to `.locale_sweep/diffs/`. Changed pixels highlighted in magenta.
+- **Diff in reports** — Diff % column in Markdown, diff badge + link in HTML, structured object in JSON.
+- **DiffResult model** — `diffPercent`, `changedPixels`, `totalPixels`, `diffImagePath` with full JSON serialization.
+- **Config** — `tolerance` key in YAML, `tolerance` and `diffOutputDir` params on `sweepTest()`.
 - 202 tests total across 11 test files.
 
 ## 0.2.0
 
-### Dark mode testing
-- Added `darkMode` parameter to `sweepTest()` — set to `true` to test every variant in both light and dark brightness.
-- Added `lightTheme` / `darkTheme` parameters — pass your app's `ThemeData` so `Theme.of(context)` works correctly inside the builder. Defaults to `ThemeData.light()` and `ThemeData.dark()` when omitted.
-- Added `dark_mode: true` support in `locale_sweep.yaml` config.
-- `SweepVariant` gains `isDark` and `brightness` properties.
-- Dark variants include "Dark" in `displayLabel` and "dark" in file-safe `label`.
-
-### Variant exclusion
-- Added `skip` callback to `sweepTest()` — return `true` to exclude specific locale/scale/viewport/brightness combinations from the test matrix.
-- Skipped variants show as `~` (skipped) in Flutter test output, not failures.
-
-### Interactive HTML report
-- Added `ReportGenerator.generateHtml()` — self-contained HTML dashboard with dark theme, no external dependencies.
-- Summary cards: total, passed, failed, overflows, ARB issues at a glance.
-- Interactive filters: filter by status (pass/fail), locale, and flow.
-- Screenshot gallery: cards grouped by flow with golden images, pass/fail badges, and issue details.
-- Dark mode and RTL badges on variant cards.
-- Locale summary table with failure row highlighting.
-- CLI now outputs `report.html` alongside `report.md` and `report.json`.
-
-### CI control
-- Added `--fail-on` CLI flag — comma-separated categories (`overflow`, `arb`, `golden`, `all`, `none`) that control which issues trigger a non-zero exit code.
-- Added `screenshotLinkBuilder` parameter to `ReportGenerator.generateMarkdown()` — customize how screenshot paths render in PR comments.
-
-### Config validation
-- `SweepConfig.load()` now warns on stderr about unknown keys (likely typos) and type mismatches.
-- Invalid YAML, empty files, and wrong types fall back to defaults with clear warning messages.
-
-### File-based result sink
-- Each `sweepTest()` flow writes results to `.locale_sweep/results/{flowName}.json` — isolate-safe, no global state.
-- CLI reads result files for full overflow and ARB data instead of parsing `--machine` output.
-
-### Other
-- Brightness field added to `SweepResult.toJson()` / `fromJson()` serialization.
-- Comprehensive integration test covering all new features (167 tests total).
-- Rewritten README with full documentation for every feature.
+- **Dark mode** — `darkMode: true` on `sweepTest()` tests every variant in both light and dark brightness. Optional `lightTheme`/`darkTheme` params.
+- **Variant exclusion** — `skip` callback to exclude specific locale/scale/viewport/brightness combos.
+- **HTML report** — self-contained dashboard with dark theme, summary cards, screenshot gallery, interactive filters, locale summary table.
+- **--fail-on** — CLI flag for selective failure categories (`overflow`, `arb`, `golden`, `all`, `none`).
+- **Config validation** — warns on unknown keys (typos) and type mismatches. Falls back to defaults.
+- **File-based results** — each flow writes JSON to `.locale_sweep/results/`. Isolate-safe, no global state.
+- 167 tests total.
 
 ## 0.1.7
 

@@ -11,6 +11,8 @@ Future<void> loadTestFonts() async {
     '$fontDir/Roboto-Medium.ttf',
   ]);
 
+  await _loadFont('NotoNaskhArabic', ['$fontDir/NotoNaskhArabic-Regular.ttf']);
+
   await _loadFont('MaterialIcons', ['$fontDir/MaterialIcons-Regular.otf']);
 }
 

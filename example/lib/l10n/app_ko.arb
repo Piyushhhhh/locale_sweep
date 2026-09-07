@@ -1,0 +1,17 @@
+{
+  "@@locale": "ko",
+  "appTitle": "TaskFlow",
+  "welcomeHeading": "TaskFlow에 오신 것을 환영합니다",
+  "welcomeSubtitle": "당신만의 방식으로 업무를 정리하세요",
+  "settingsTitle": "알림 설정",
+  "settingsEmailLabel": "이메일 알림",
+  "settingsEmailDesc": "{time}에 일일 요약 수신",
+  "settingsPushLabel": "푸시 알림",
+  "settingsPushDesc": "{category} 업데이트에 대한 즉시 알림 받기",
+  "taskCount": "남은 작업 {count}개",
+  "profileGreeting": "안녕하세요, {userName}님!",
+  "profileLastLogin": "마지막 로그인: {date}",
+  "logoutButton": "로그아웃",
+  "deleteAccount": "계정 영구 삭제",
+  "upgradePrompt": "무제한 프로젝트를 위해 Pro로 업그레이드하세요"
+}
