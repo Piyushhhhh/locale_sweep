@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(title: Text(l10n.profileGreeting('Sarah'))),
       body: Padding(
         // BUG: Hardcoded left padding — breaks RTL layout for Arabic/Hebrew.
         // Should use EdgeInsetsDirectional.only(start: 24, end: 16).
@@ -18,12 +21,12 @@ class ProfileScreen extends StatelessWidget {
             const CircleAvatar(radius: 40, child: Icon(Icons.person, size: 48)),
             const SizedBox(height: 16),
             Text(
-              'Hello, Sarah!',
+              l10n.profileGreeting('Sarah'),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Last login: September 3, 2026',
+              l10n.profileLastLogin('September 3, 2026'),
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
@@ -36,7 +39,7 @@ class ProfileScreen extends StatelessWidget {
                 const Icon(Icons.delete_forever, color: Colors.red),
                 const SizedBox(width: 8),
                 Text(
-                  'Delete account',
+                  l10n.deleteAccount,
                   style: Theme.of(
                     context,
                   ).textTheme.titleMedium?.copyWith(color: Colors.red),
@@ -52,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Log out',
+                    l10n.logoutButton,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),

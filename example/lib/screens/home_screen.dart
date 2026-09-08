@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import 'settings_screen.dart';
 import 'profile_screen.dart';
 
@@ -8,20 +9,21 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('TaskFlow')),
+      appBar: AppBar(title: Text(l10n.appTitle)),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome to TaskFlow',
+              l10n.welcomeHeading,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Organize your work, your way',
+              l10n.welcomeSubtitle,
               style: Theme.of(
                 context,
               ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
@@ -37,7 +39,7 @@ class HomeScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                '5 tasks remaining',
+                l10n.taskCount(5),
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Colors.deepPurple,
                   fontWeight: FontWeight.w600,
@@ -49,8 +51,8 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 32),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              subtitle: const Text('Notification preferences'),
+              title: Text(l10n.settingsTitle),
+              subtitle: Text(l10n.settingsEmailLabel),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.push(
                 context,
@@ -59,8 +61,8 @@ class HomeScreen extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.person),
-              title: const Text('Profile'),
-              subtitle: const Text('Account & preferences'),
+              title: Text(l10n.profileGreeting('Sarah')),
+              subtitle: Text(l10n.logoutButton),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.push(
                 context,

@@ -158,6 +158,41 @@ sweepTest(
 
 Also configurable via YAML (`base_locale: de`) or env var (`LOCALE_SWEEP_BASE_LOCALE=de`).
 
+### Using with `flutter gen-l10n`
+
+Most Flutter apps use `flutter gen-l10n` to generate `AppLocalizations`. Here's how to wire it up:
+
+**Option 1: Full MaterialApp** (tests the screen inside its normal app shell)
+
+```dart
+sweepTest(
+  'home',
+  builder: () => const MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: HomeScreen(),
+  ),
+  locales: ['en', 'de', 'ar', 'ja'],
+  arbDir: 'lib/l10n',
+);
+```
+
+**Option 2: Screen in isolation** (faster, tests just the screen with `localizationsDelegates`)
+
+```dart
+sweepTest(
+  'settings',
+  builder: () => const SettingsScreen(),
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  locales: ['en', 'de', 'ar', 'ja'],
+  arbDir: 'lib/l10n',
+);
+```
+
+Option 2 skips the `MaterialApp` overhead and tests the screen directly. LocaleSweep injects the `Localizations` ancestor, so `AppLocalizations.of(context)!` works in both cases.
+
+> See the [example app](https://github.com/Piyushhhhh/locale_sweep/tree/main/example) for a full `gen-l10n` setup with 8 locales and intentional bugs.
+
 ---
 
 ## Screenshot diffing
