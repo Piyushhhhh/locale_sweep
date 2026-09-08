@@ -68,11 +68,7 @@ void main() {
       'full_app_with_delegates',
       builder: () => MaterialApp(
         localizationsDelegates: const [AppStringsDelegate()],
-        supportedLocales: const [
-          Locale('en'),
-          Locale('de'),
-          Locale('ar'),
-        ],
+        supportedLocales: const [Locale('en'), Locale('de'), Locale('ar')],
         home: Builder(
           builder: (context) {
             final strings = AppStrings.of(context);
@@ -96,9 +92,7 @@ void main() {
     sweepTest(
       'no_delegates_plain',
       builder: () => const Scaffold(
-        body: Center(
-          child: Text('This widget has no localization'),
-        ),
+        body: Center(child: Text('This widget has no localization')),
       ),
       locales: ['en', 'de'],
       textScales: [1.0],
