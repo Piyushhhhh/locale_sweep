@@ -13,6 +13,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
+flutter:
+  generate: true
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

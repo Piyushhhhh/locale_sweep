@@ -62,7 +62,7 @@ sweepTest(
 
 ```yaml
 dev_dependencies:
-  locale_sweep: ^0.4.0
+  locale_sweep: ^0.5.0
 ```
 
 ### 2. Write a sweep test
@@ -125,6 +125,73 @@ sweepTest(
 ```
 
 Also configurable via YAML: `dark_mode: true`
+
+---
+
+## Localizations integration
+
+Test individual screens with `AppLocalizations.of(context)` — no `MaterialApp` wrapper needed:
+
+```dart
+sweepTest(
+  'settings',
+  builder: () => const SettingsScreen(),  // just the screen, not the full app
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  locales: ['en', 'de', 'ar', 'ja'],
+  arbDir: 'lib/l10n',
+);
+```
+
+LocaleSweep wraps the widget in a `Localizations` ancestor with your delegates, sets the locale per variant, and includes Material/Widgets fallback delegates automatically. Your screen's `AppLocalizations.of(context)` calls work as if it were inside a `MaterialApp`.
+
+### Base locale
+
+By default, ARB analysis compares against `app_en.arb`. For non-English base locales:
+
+```dart
+sweepTest(
+  'settings',
+  builder: () => const SettingsScreen(),
+  baseLocale: 'de',  // compare other locales against German
+);
+```
+
+Also configurable via YAML (`base_locale: de`) or env var (`LOCALE_SWEEP_BASE_LOCALE=de`).
+
+### Using with `flutter gen-l10n`
+
+Most Flutter apps use `flutter gen-l10n` to generate `AppLocalizations`. Here's how to wire it up:
+
+**Option 1: Full MaterialApp** (tests the screen inside its normal app shell)
+
+```dart
+sweepTest(
+  'home',
+  builder: () => const MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: HomeScreen(),
+  ),
+  locales: ['en', 'de', 'ar', 'ja'],
+  arbDir: 'lib/l10n',
+);
+```
+
+**Option 2: Screen in isolation** (faster, tests just the screen with `localizationsDelegates`)
+
+```dart
+sweepTest(
+  'settings',
+  builder: () => const SettingsScreen(),
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  locales: ['en', 'de', 'ar', 'ja'],
+  arbDir: 'lib/l10n',
+);
+```
+
+Option 2 skips the `MaterialApp` overhead and tests the screen directly. LocaleSweep injects the `Localizations` ancestor, so `AppLocalizations.of(context)!` works in both cases.
+
+> See the [example app](https://github.com/Piyushhhhh/locale_sweep/tree/main/example) for a full `gen-l10n` setup with 8 locales and intentional bugs.
 
 ---
 
@@ -197,6 +264,7 @@ viewports:
 dark_mode: true
 tolerance: 0.5
 arb_dir: lib/l10n
+base_locale: en
 screenshot_dir: .locale_sweep/screenshots
 report_dir: .locale_sweep/reports
 ```
@@ -220,6 +288,7 @@ LOCALE_SWEEP_LOCALES=en,de LOCALE_SWEEP_TOLERANCE=1.0 dart run locale_sweep run
 | `LOCALE_SWEEP_SCREENSHOT_DIR` | `screenshot_dir` |
 | `LOCALE_SWEEP_REPORT_DIR` | `report_dir` |
 | `LOCALE_SWEEP_ARB_DIR` | `arb_dir` |
+| `LOCALE_SWEEP_BASE_LOCALE` | `base_locale` |
 
 ---
 
@@ -353,6 +422,8 @@ dart run locale_sweep scan                                # Discover monorepo pa
 | `lightTheme` / `darkTheme` | `ThemeData?` | Flutter defaults | Themes for brightness variants |
 | `skip` | `bool Function(SweepVariant)?` | `null` | Exclude variants from the matrix |
 | `arbDir` | `String?` | from config | Path to `.arb` files for static analysis |
+| `baseLocale` | `String?` | from config | Base locale for ARB analysis (default: `'en'`) |
+| `localizationsDelegates` | `List<LocalizationsDelegate>?` | `null` | Wraps widget in `Localizations` for `AppLocalizations.of(context)` |
 | `tolerance` | `double?` | from config | Max pixel-diff % (0.0–100.0) |
 | `captureScreenshots` | `bool` | `true` | Save golden screenshots |
 | `diffOutputDir` | `String` | `.locale_sweep/diffs` | Directory for diff images |
@@ -387,4 +458,4 @@ Custom: `ViewportPreset(name: '1280x800', width: 1280, height: 800)`
 
 ---
 
-283 tests across 14 files. [Full changelog](CHANGELOG.md). [MIT License](https://opensource.org/licenses/MIT).
+320 tests across 16 files. [Full changelog](CHANGELOG.md). [MIT License](https://opensource.org/licenses/MIT).

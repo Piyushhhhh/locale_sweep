@@ -1,3 +1,11 @@
+## 0.5.0
+
+- **Localizations integration** — new `localizationsDelegates` parameter on `sweepTest()`. Wraps the widget in a `Localizations` ancestor so `AppLocalizations.of(context)` works for individual screen tests without needing a full `MaterialApp`. Fallback Material/Widgets delegates are included automatically for all locales.
+- **`baseLocale` config** — configurable base locale for ARB analysis. Set via `sweepTest(baseLocale:)`, YAML `base_locale:`, or `LOCALE_SWEEP_BASE_LOCALE` env var. Defaults to `'en'`.
+- **`parseLocale()` helper** — proper BCP-47 locale parsing. Handles `en`, `en_US`, `pt-BR`, `zh_Hans`, `zh_Hans_CN`. Used internally and exported for user convenience.
+- **Example app uses `flutter gen-l10n`** — all three example screens now use `AppLocalizations.of(context)` instead of hardcoded strings. Demonstrates both patterns: full `MaterialApp` with delegates (home) and screen-in-isolation with `localizationsDelegates` param (settings, profile).
+- 320 tests total across 16 test files.
+
 ## 0.4.2
 
 - **German umlaut fix** — screenshot gallery now renders proper umlauts (Übersetzungen, Prüfungen, Schlüssel, etc.) instead of ASCII fallbacks.
