@@ -31,6 +31,10 @@ class SweepConfig {
   /// Screenshots within this tolerance pass even when pixels differ.
   final double tolerance;
 
+  /// The base locale for ARB analysis (keys in this locale are the reference).
+  /// Defaults to `'en'`.
+  final String baseLocale;
+
   const SweepConfig({
     this.locales = const ['en', 'de', 'ar', 'ja'],
     this.textScales = const [1.0, 2.0],
@@ -40,6 +44,7 @@ class SweepConfig {
     this.screenshotDir = '.locale_sweep/screenshots',
     this.reportDir = '.locale_sweep/reports',
     this.arbDir,
+    this.baseLocale = 'en',
   });
 
   static const _knownKeys = {
@@ -51,6 +56,7 @@ class SweepConfig {
     'screenshot_dir',
     'report_dir',
     'arb_dir',
+    'base_locale',
   };
 
   /// Loads configuration from a YAML file, falling back to defaults.
@@ -97,6 +103,7 @@ class SweepConfig {
     _warnIfWrongType(path, yaml, 'report_dir', 'string');
     _warnIfWrongType(path, yaml, 'arb_dir', 'string');
     _warnIfWrongType(path, yaml, 'tolerance', 'num');
+    _warnIfWrongType(path, yaml, 'base_locale', 'string');
 
     return _applyEnvOverrides(
       SweepConfig(
@@ -111,6 +118,7 @@ class SweepConfig {
             _parseString(yaml['screenshot_dir']) ?? '.locale_sweep/screenshots',
         reportDir: _parseString(yaml['report_dir']) ?? '.locale_sweep/reports',
         arbDir: _parseString(yaml['arb_dir']),
+        baseLocale: _parseString(yaml['base_locale']) ?? 'en',
       ),
     );
   }
@@ -163,6 +171,7 @@ class SweepConfig {
       screenshotDir: env['LOCALE_SWEEP_SCREENSHOT_DIR'] ?? base.screenshotDir,
       reportDir: env['LOCALE_SWEEP_REPORT_DIR'] ?? base.reportDir,
       arbDir: env['LOCALE_SWEEP_ARB_DIR'] ?? base.arbDir,
+      baseLocale: env['LOCALE_SWEEP_BASE_LOCALE'] ?? base.baseLocale,
     );
   }
 

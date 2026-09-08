@@ -45,6 +45,12 @@ typedef SweepVariantBody =
 /// `Theme.of(context)` works inside the builder — if omitted, default
 /// Material themes are used when [darkMode] is enabled.
 ///
+/// Pass [localizationsDelegates] to wrap the widget in a [Localizations]
+/// ancestor so `AppLocalizations.of(context)` works for individual screen
+/// tests. When provided, the variant's locale is set on the [Localizations]
+/// widget and default Material/Widgets/Cupertino delegates are included
+/// automatically.
+///
 /// Overflow errors are captured and fail the variant after the result
 /// is recorded (so screenshots exist before failure).
 void sweepTest(
@@ -60,12 +66,14 @@ void sweepTest(
   ThemeData? lightTheme,
   ThemeData? darkTheme,
   String? arbDir,
+  String? baseLocale,
   bool captureScreenshots = true,
   String screenshotDir = '.locale_sweep/screenshots',
   bool Function(SweepVariant variant)? skip,
   double? tolerance,
   String diffOutputDir = '.locale_sweep/diffs',
   Future<void> Function()? setUp,
+  List<LocalizationsDelegate<dynamic>>? localizationsDelegates,
 }) {
   final cfg = config ?? const SweepConfig();
   final effectiveLocales = locales ?? cfg.locales;
@@ -74,6 +82,7 @@ void sweepTest(
   final effectiveDarkMode = darkMode ?? cfg.darkMode;
   final effectiveArbDir = arbDir ?? cfg.arbDir;
   final effectiveTolerance = tolerance ?? cfg.tolerance;
+  final effectiveBaseLocale = baseLocale ?? cfg.baseLocale;
 
   final darkModes = [false, if (effectiveDarkMode) true];
 
@@ -107,6 +116,7 @@ void sweepTest(
     arbReport = ArbAnalyzer.analyze(
       arbDir: effectiveArbDir,
       locales: effectiveLocales,
+      baseLocale: effectiveBaseLocale,
     );
   }
 
@@ -157,6 +167,19 @@ void sweepTest(
           Widget child = builder();
           if (themeData != null) {
             child = Theme(data: themeData, child: child);
+          }
+
+          if (localizationsDelegates != null) {
+            final allDelegates = <LocalizationsDelegate<dynamic>>[
+              ...localizationsDelegates,
+              _FallbackMaterialLocalizationsDelegate(),
+              _FallbackWidgetsLocalizationsDelegate(),
+            ];
+            child = Localizations(
+              locale: parseLocale(variant.locale),
+              delegates: allDelegates,
+              child: child,
+            );
           }
 
           final widget = Directionality(
@@ -251,12 +274,65 @@ void sweepTest(
   });
 }
 
+/// Parses a BCP-47 locale string into a [Locale].
+///
+/// Handles: `en`, `en_US`, `zh_Hans`, `zh_Hans_CN`, and hyphenated
+/// variants like `pt-BR`.
+Locale parseLocale(String code) {
+  final parts = code.replaceAll('-', '_').split('_');
+  if (parts.length == 1) return Locale(parts[0]);
+  if (parts.length == 2) {
+    // Could be language_country (en_US) or language_script (zh_Hans)
+    if (parts[1].length == 4) {
+      // Script code is 4 chars (Hans, Latn, etc.)
+      return Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1]);
+    }
+    return Locale(parts[0], parts[1]);
+  }
+  // language_script_country (zh_Hans_CN)
+  return Locale.fromSubtags(
+    languageCode: parts[0],
+    scriptCode: parts[1],
+    countryCode: parts[2],
+  );
+}
+
+class _FallbackMaterialLocalizationsDelegate
+    extends LocalizationsDelegate<MaterialLocalizations> {
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<MaterialLocalizations> load(Locale locale) =>
+      DefaultMaterialLocalizations.load(locale);
+
+  @override
+  bool shouldReload(
+    covariant LocalizationsDelegate<MaterialLocalizations> old,
+  ) => false;
+}
+
+class _FallbackWidgetsLocalizationsDelegate
+    extends LocalizationsDelegate<WidgetsLocalizations> {
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<WidgetsLocalizations> load(Locale locale) =>
+      DefaultWidgetsLocalizations.load(locale);
+
+  @override
+  bool shouldReload(
+    covariant LocalizationsDelegate<WidgetsLocalizations> old,
+  ) => false;
+}
+
 void _configureTestEnvironment(WidgetTester tester, SweepVariant variant) {
   final view = tester.view;
   view.physicalSize = Size(variant.viewport.width, variant.viewport.height);
   view.devicePixelRatio = 1.0;
 
-  tester.platformDispatcher.localeTestValue = ui.Locale(variant.locale);
+  tester.platformDispatcher.localeTestValue = parseLocale(variant.locale);
   tester.platformDispatcher.textScaleFactorTestValue = variant.textScale;
   tester.platformDispatcher.platformBrightnessTestValue = variant.isDark
       ? ui.Brightness.dark
