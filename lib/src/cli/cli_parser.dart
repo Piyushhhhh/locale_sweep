@@ -16,6 +16,7 @@ class ParsedReport {
   final int passed;
   final int failed;
   final List<SweepResult> results;
+  final List<String> executionErrors;
 
   ParsedReport({
     required this.markdown,
@@ -26,18 +27,23 @@ class ParsedReport {
     required this.passed,
     required this.failed,
     required this.results,
+    this.executionErrors = const [],
   });
 }
 
 bool shouldFail(ParsedReport report, Set<String> failOn) {
+  if (report.executionErrors.isNotEmpty ||
+      report.results.any((r) => r.hasTestFailure)) {
+    return true;
+  }
   if (failOn.contains('all')) return report.failed > 0;
   if (failOn.contains('none')) return false;
 
   for (final r in report.results) {
-    if (!r.passed) {
-      if (failOn.contains('overflow') && r.overflows.isNotEmpty) return true;
-      if (failOn.contains('arb') && r.arbIssues.isNotEmpty) return true;
-      if (failOn.contains('golden') && r.errorMessage != null) return true;
+    if (failOn.contains('overflow') && r.hasOverflows) return true;
+    if (failOn.contains('arb') && r.hasArbIssues) return true;
+    if (failOn.contains('golden') && r.failureKind == SweepFailureKind.golden) {
+      return true;
     }
   }
   return false;
@@ -51,7 +57,7 @@ ParsedReport? loadResults(
   if (!resultsDir.existsSync()) return null;
 
   final files = resultsDir
-      .listSync()
+      .listSync(recursive: true)
       .whereType<File>()
       .where((f) => f.path.endsWith('.json'))
       .toList();
@@ -59,6 +65,7 @@ ParsedReport? loadResults(
   if (files.isEmpty) return null;
 
   final sweepResults = <SweepResult>[];
+  final errors = <String>[];
   for (final file in files) {
     try {
       final list = jsonDecode(file.readAsStringSync()) as List;
@@ -66,13 +73,13 @@ ParsedReport? loadResults(
         sweepResults.add(SweepResult.fromJson(item as Map<String, dynamic>));
       }
     } catch (e) {
-      stderr.writeln('Warning: Failed to read ${file.path}: $e');
+      errors.add('Failed to read ${file.path}: $e');
     }
   }
 
-  if (sweepResults.isEmpty) return null;
+  if (sweepResults.isEmpty && errors.isEmpty) return null;
 
-  return _buildReport(sweepResults);
+  return _buildReport(sweepResults, executionErrors: errors);
 }
 
 ParsedReport parseMachineOutput(String output, SweepConfig cfg) {
@@ -187,16 +194,25 @@ SweepVariant parseVariantFromName(String testName, SweepConfig cfg) {
   );
 }
 
-ParsedReport mergeResults(List<SweepResult> results) => _buildReport(results);
+ParsedReport mergeResults(
+  List<SweepResult> results, {
+  List<String> executionErrors = const [],
+}) => _buildReport(results, executionErrors: executionErrors);
 
-ParsedReport _buildReport(List<SweepResult> sweepResults) {
-  final runSummary = SweepRunSummary(results: sweepResults);
+ParsedReport _buildReport(
+  List<SweepResult> sweepResults, {
+  List<String> executionErrors = const [],
+}) {
+  final runSummary = SweepRunSummary(
+    results: sweepResults,
+    executionErrors: executionErrors,
+  );
   final markdown = ReportGenerator.generateMarkdown(runSummary);
   final jsonStr = ReportGenerator.generateJson(runSummary);
   final htmlStr = ReportGenerator.generateHtml(runSummary);
 
   final total = sweepResults.length;
-  final passed = sweepResults.where((r) => r.passed).length;
+  final passed = runSummary.passed;
   final failed = total - passed;
 
   final overflowCount = sweepResults.fold<int>(
@@ -209,6 +225,9 @@ ParsedReport _buildReport(List<SweepResult> sweepResults) {
   );
 
   final parts = <String>[];
+  if (executionErrors.isNotEmpty) {
+    parts.add('${executionErrors.length} execution error(s)');
+  }
   if (failed > 0) parts.add('$failed/$total variants failed');
   if (overflowCount > 0) parts.add('$overflowCount overflow(s)');
   if (arbCount > 0) parts.add('$arbCount ARB issue(s)');
@@ -225,5 +244,6 @@ ParsedReport _buildReport(List<SweepResult> sweepResults) {
     passed: passed,
     failed: failed,
     results: sweepResults,
+    executionErrors: executionErrors,
   );
 }

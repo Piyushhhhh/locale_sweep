@@ -10,7 +10,16 @@ import 'package:locale_sweep/src/config/sweep_config.dart';
 import 'package:locale_sweep/src/report/github_reporter.dart';
 import 'package:locale_sweep/src/report/sweep_result.dart';
 
-void main(List<String> args) async {
+Future<void> main(List<String> args) async {
+  try {
+    await _main(args);
+  } catch (error) {
+    stderr.writeln('Error: $error');
+    exitCode = 2;
+  }
+}
+
+Future<void> _main(List<String> args) async {
   final parser = ArgParser()
     ..addCommand('run')
     ..addCommand('update')
@@ -116,351 +125,276 @@ void main(List<String> args) async {
   }
 }
 
-Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
-  final packages = args['packages'] as String?;
-
-  if (packages != null) {
-    final pkgDirs = packages.split(',').map((s) => s.trim()).toList();
-    await _runMultiPackage(pkgDirs, args, updateGoldens: updateGoldens);
-    return;
+Set<String> _failureCategories(ArgResults args) {
+  final categories =
+      (args.options.contains('fail-on') ? args['fail-on'] as String : 'all')
+          .split(',')
+          .map((s) => s.trim())
+          .toSet();
+  const valid = {'all', 'none', 'overflow', 'arb', 'golden'};
+  if (categories.any((c) => !valid.contains(c)) ||
+      (categories.length > 1 &&
+          (categories.contains('all') || categories.contains('none')))) {
+    throw const FormatException(
+      'Use --fail-on all, none, or a comma-separated '
+      'list of overflow, arb, golden.',
+    );
   }
-
-  await _runSinglePackage(args, updateGoldens: updateGoldens);
+  return categories;
 }
 
-Future<void> _runMultiPackage(
-  List<String> pkgDirs,
-  ArgResults args, {
-  required bool updateGoldens,
-}) async {
+Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
+  final failOn = _failureCategories(args);
+  final shards = int.tryParse(args['shards'] as String? ?? '1');
+  final shardIndex = int.tryParse(args['shard-index'] as String? ?? '0');
+  if (shards == null ||
+      shards < 1 ||
+      shardIndex == null ||
+      shardIndex < 0 ||
+      shardIndex >= shards ||
+      (args['shard-index'] != null && args['shards'] == null)) {
+    throw const FormatException(
+      'Use --shards N (N > 0) and --shard-index I (0 <= I < N).',
+    );
+  }
+  final packages = args['packages'] as String?;
+  final dirs = packages?.split(',').map((s) => s.trim()).toList() ?? ['.'];
+  if (dirs.any((d) => d.isEmpty)) {
+    throw const FormatException('--packages must contain package directories.');
+  }
   final allResults = <SweepResult>[];
-  var anyFailed = false;
-
-  for (final pkgDir in pkgDirs) {
-    final absDir = p.isAbsolute(pkgDir)
-        ? pkgDir
-        : p.join(Directory.current.path, pkgDir);
-    if (!Directory(absDir).existsSync()) {
-      stderr.writeln(
-        'Warning: Package directory "$pkgDir" not found, skipping.',
-      );
-      continue;
-    }
-
-    final pkgName = p.basename(absDir);
-    stdout.writeln('━━━ Package: $pkgName ━━━');
-
-    final exitCode = await _runInDirectory(
-      absDir,
+  final errors = <String>[];
+  ParsedReport? singleReport;
+  for (final dir in dirs) {
+    final absoluteDir = p.normalize(p.absolute(dir));
+    if (packages != null) stdout.writeln('━━━ Package: $dir ━━━');
+    final report = await _runInDirectory(
+      absoluteDir,
       args,
       updateGoldens: updateGoldens,
     );
-    if (exitCode != 0) anyFailed = true;
-
-    final cfg = SweepConfig.load(p.join(absDir, args['config'] as String));
-    final outputDir = args['output'] as String? ?? cfg.reportDir;
-    final jsonPath = p.join(absDir, outputDir, 'report.json');
-    if (File(jsonPath).existsSync()) {
-      final data =
-          jsonDecode(File(jsonPath).readAsStringSync()) as Map<String, dynamic>;
-      final results = (data['results'] as List)
-          .map((e) => SweepResult.fromJson(e as Map<String, dynamic>))
-          .toList();
-      allResults.addAll(results);
-    }
-    stdout.writeln();
+    singleReport = report;
+    allResults.addAll(report.results);
+    errors.addAll(report.executionErrors.map((e) => '$dir: $e'));
   }
-
-  if (allResults.isNotEmpty) {
-    final mergedReport = mergeResults(allResults);
-    final outputDir = args['output'] as String? ?? '.locale_sweep/reports';
-    Directory(outputDir).createSync(recursive: true);
-    File('$outputDir/report.md').writeAsStringSync(mergedReport.markdown);
-    File('$outputDir/report.json').writeAsStringSync(mergedReport.json);
-    File('$outputDir/report.html').writeAsStringSync(mergedReport.html);
-
+  final report = packages == null
+      ? singleReport!
+      : mergeResults(allResults, executionErrors: errors);
+  if (packages != null) {
+    final output = args['output'] as String? ?? '.locale_sweep/reports';
+    _writeReport(report, output);
     stdout.writeln('━━━ Merged Report ━━━');
-    stdout.writeln(mergedReport.summary);
-    stdout.writeln('Report: $outputDir/report.html');
+    stdout.writeln(report.summary);
   }
-
-  if (anyFailed && !updateGoldens) exit(1);
+  if (args.options.contains('github-pr') && args['github-pr'] as bool) {
+    await _postToGitHub(report);
+  }
+  if (shouldFail(report, failOn)) exitCode = 1;
 }
 
-Future<int> _runInDirectory(
+Future<ParsedReport> _runInDirectory(
   String dir,
   ArgResults args, {
   required bool updateGoldens,
 }) async {
-  final testDir = args['test-dir'] as String;
-  final configPath = args['config'] as String;
-  final verbose = args['verbose'] as bool;
-  final shards = args['shards'] as String?;
-  final shardIndex = args['shard-index'] as String?;
-
-  final flutterArgs = <String>[
-    'test',
-    '--machine',
-    if (updateGoldens) '--update-goldens',
-    if (shards != null) '--total-shards=$shards',
-    if (shardIndex != null) '--shard-index=$shardIndex',
-    testDir,
-  ];
-
-  final process = await Process.start(
-    'flutter',
-    flutterArgs,
-    workingDirectory: dir,
+  final configArgument = args['config'] as String;
+  final configPath = p.normalize(
+    p.isAbsolute(configArgument) ? configArgument : p.join(dir, configArgument),
   );
-  final buf = StringBuffer();
-  process.stdout.transform(utf8.decoder).listen((d) => buf.write(d));
-  process.stderr.transform(utf8.decoder).listen((d) {
-    if (verbose) stderr.write(d);
-  });
-  final code = await process.exitCode;
-
-  final cfg = SweepConfig.load(p.join(dir, configPath));
-  final outputDir = args['output'] as String? ?? cfg.reportDir;
-  final fullOutputDir = p.join(dir, outputDir);
-  Directory(fullOutputDir).createSync(recursive: true);
-
-  final report =
-      loadResults(cfg, resultsPath: p.join(dir, '.locale_sweep/results')) ??
-      parseMachineOutput(buf.toString(), cfg);
-  File('$fullOutputDir/report.md').writeAsStringSync(report.markdown);
-  File('$fullOutputDir/report.json').writeAsStringSync(report.json);
-  File('$fullOutputDir/report.html').writeAsStringSync(report.html);
-  stdout.writeln('  ${report.summary}');
-
-  return code;
-}
-
-Future<void> _runSinglePackage(
-  ArgResults args, {
-  required bool updateGoldens,
-}) async {
-  final configPath = args['config'] as String;
-  final cfg = SweepConfig.load(configPath);
-
-  final testDir = args['test-dir'] as String;
-  final outputDir = args['output'] as String? ?? cfg.reportDir;
-  final flows = args['flows'] as String?;
-  final verbose = args['verbose'] as bool;
-  final githubPr =
-      args.options.contains('github-pr') && args['github-pr'] as bool;
-  final failOnRaw = args.options.contains('fail-on')
-      ? args['fail-on'] as String
-      : 'all';
-  final failOn = failOnRaw.split(',').map((s) => s.trim()).toSet();
-  final shards = args['shards'] as String?;
-  final shardIndex = args['shard-index'] as String?;
-
-  if (!Directory(testDir).existsSync()) {
-    stderr.writeln('Error: Test directory "$testDir" not found.');
-    stderr.writeln('Create sweep tests in $testDir/ using sweepTest().');
-    exit(1);
-  }
-
-  final testFiles = Directory(testDir)
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((f) => f.path.endsWith('_test.dart'))
-      .toList();
-
-  if (testFiles.isEmpty) {
-    stderr.writeln('Error: No test files found in "$testDir".');
-    exit(1);
-  }
-
-  var filesToRun = testFiles;
-  if (flows != null) {
-    final flowNames = flows.split(',').map((s) => s.trim()).toSet();
-    filesToRun = testFiles.where((f) {
-      final name = p.basenameWithoutExtension(f.path).replaceAll('_test', '');
-      return flowNames.contains(name);
-    }).toList();
-
-    if (filesToRun.isEmpty) {
-      stderr.writeln(
-        'Error: No test files match flows: ${flowNames.join(", ")}',
-      );
-      stderr.writeln(
-        'Available: ${testFiles.map((f) => p.basenameWithoutExtension(f.path).replaceAll("_test", "")).join(", ")}',
-      );
-      exit(1);
+  final outputArgument = args['output'] as String?;
+  var output = p.normalize(
+    outputArgument != null && p.isAbsolute(outputArgument)
+        ? outputArgument
+        : p.join(dir, outputArgument ?? '.locale_sweep/reports'),
+  );
+  var report = mergeResults([]);
+  try {
+    if (!Directory(dir).existsSync()) {
+      throw FileSystemException('Package directory not found', dir);
     }
-  }
-
-  Directory(outputDir).createSync(recursive: true);
-  Directory('$outputDir/screenshots').createSync(recursive: true);
-
-  final mode = updateGoldens ? 'Updating goldens' : 'Running checks';
-  stdout.writeln('LocaleSweep — $mode');
-  stdout.writeln(
-    'Config: ${File(configPath).existsSync() ? configPath : "defaults"}',
-  );
-  if (shards != null) {
-    stdout.writeln('Shard ${shardIndex ?? 0} of $shards');
-  }
-  stdout.writeln('${filesToRun.length} flow(s)');
-  stdout.writeln();
-
-  final flutterArgs = <String>[
-    'test',
-    '--machine',
-    if (updateGoldens) '--update-goldens',
-    if (shards != null) '--total-shards=$shards',
-    if (shardIndex != null) '--shard-index=$shardIndex',
-    ...filesToRun.map((f) => f.path),
-  ];
-
-  if (verbose) {
-    stdout.writeln('flutter ${flutterArgs.join(" ")}');
-    stdout.writeln();
-  }
-
-  final process = await Process.start('flutter', flutterArgs);
-
-  final stdoutBuf = StringBuffer();
-  final stderrBuf = StringBuffer();
-  var passCount = 0;
-  var failCount = 0;
-  var lineBuf = StringBuffer();
-
-  process.stdout.transform(utf8.decoder).listen((data) {
-    stdoutBuf.write(data);
-    if (verbose) {
-      stdout.write(data);
-    } else {
-      lineBuf.write(data);
-      final lines = lineBuf.toString().split('\n');
-      lineBuf = StringBuffer(lines.last);
-      for (var i = 0; i < lines.length - 1; i++) {
-        final line = lines[i].trim();
-        if (line.isEmpty || !line.startsWith('{')) continue;
-        try {
-          final event = jsonDecode(line) as Map<String, dynamic>;
-          if (event['type'] == 'testDone' && event['skipped'] != true) {
-            if (event['result'] == 'success') {
-              passCount++;
-            } else {
-              failCount++;
+    if (args.wasParsed('config') && !File(configPath).existsSync()) {
+      throw FileSystemException('Configuration file not found', configPath);
+    }
+    final cfg = SweepConfig.load(configPath);
+    output = p.normalize(
+      outputArgument != null && p.isAbsolute(outputArgument)
+          ? outputArgument
+          : p.join(dir, outputArgument ?? cfg.reportDir),
+    );
+    final testArgument = args['test-dir'] as String;
+    final testDir = Directory(
+      p.normalize(
+        p.isAbsolute(testArgument) ? testArgument : p.join(dir, testArgument),
+      ),
+    );
+    if (!testDir.existsSync()) {
+      throw FileSystemException('Test directory not found', testDir.path);
+    }
+    var files = testDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('_test.dart'))
+        .toList();
+    final flows = args['flows'] as String?;
+    if (flows != null) {
+      final names = flows.split(',').map((s) => s.trim()).toSet();
+      files = files
+          .where(
+            (f) => names.contains(
+              p.basename(f.path).replaceFirst(RegExp(r'_test\.dart$'), ''),
+            ),
+          )
+          .toList();
+    }
+    files.sort((a, b) => a.path.compareTo(b.path));
+    if (files.isEmpty) {
+      throw StateError(
+        'No sweep test files match in ${testDir.path}'
+        '${flows == null ? '' : ' (flows: $flows)'}.',
+      );
+    }
+    final runs = Directory(p.join(dir, '.locale_sweep', 'runs'))
+      ..createSync(recursive: true);
+    final runDir = runs.createTempSync('run_');
+    final resultsDir = p.join(runDir.path, 'results');
+    final flutterArgs = <String>[
+      'test',
+      '--machine',
+      if (updateGoldens) '--update-goldens',
+      if (args['shards'] != null) '--total-shards=${args['shards']}',
+      if (args['shards'] != null) '--shard-index=${args['shard-index'] ?? '0'}',
+      ...files.map((f) => f.path),
+    ];
+    final verbose = args['verbose'] as bool;
+    stdout.writeln(
+      'LocaleSweep — ${updateGoldens ? 'Updating goldens' : 'Running checks'}',
+    );
+    stdout.writeln('Config: $configPath');
+    stdout.writeln('${files.length} test file(s)');
+    if (verbose) stdout.writeln('flutter ${flutterArgs.join(' ')}');
+    final process = await Process.start(
+      'flutter',
+      flutterArgs,
+      workingDirectory: dir,
+      environment: {
+        'LOCALE_SWEEP_CONFIG': configPath,
+        'LOCALE_SWEEP_RESULTS_DIR': resultsDir,
+        'LOCALE_SWEEP_MANAGED_RUN': 'true',
+      },
+    );
+    final stdoutBuf = StringBuffer();
+    final stderrBuf = StringBuffer();
+    var completed = false;
+    var finished = 0;
+    final stdoutDone = process.stdout
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .forEach((line) {
+          stdoutBuf.writeln(line);
+          if (verbose) stdout.writeln(line);
+          try {
+            final event = jsonDecode(line) as Map<String, dynamic>;
+            if (event['type'] == 'done') completed = true;
+            if (event['type'] == 'testDone' &&
+                event['hidden'] != true &&
+                event['skipped'] != true) {
+              finished++;
+              if (!verbose) stdout.write('\r  $finished test(s) completed');
             }
-            final total = passCount + failCount;
-            final status = failCount > 0
-                ? '$passCount passed, $failCount failed'
-                : '$passCount passed';
-            stdout.write('\r  $total variant(s) tested — $status');
+          } on FormatException {
+            // Flutter can emit non-JSON startup messages.
           }
-        } catch (_) {}
-      }
+        });
+    final stderrDone = process.stderr.transform(utf8.decoder).forEach((data) {
+      stderrBuf.write(data);
+      if (verbose) stderr.write(data);
+    });
+    final code = await process.exitCode;
+    await Future.wait([stdoutDone, stderrDone]);
+    if (!verbose && finished > 0) stdout.writeln();
+    // Keep the process transcript next to the isolated results for diagnosis.
+    File(
+      p.join(runDir.path, 'flutter.jsonl'),
+    ).writeAsStringSync(stdoutBuf.toString());
+    File(
+      p.join(runDir.path, 'stderr.log'),
+    ).writeAsStringSync(stderrBuf.toString());
+    final loaded = loadResults(cfg, resultsPath: resultsDir);
+    final executionErrors = <String>[...?loaded?.executionErrors];
+    if (code != 0) {
+      executionErrors.add(
+        'flutter test exited with code $code. '
+        'See ${p.join(runDir.path, 'flutter.jsonl')} and stderr.log.',
+      );
+      if (!verbose && stderrBuf.isNotEmpty) stderr.write(stderrBuf);
     }
-  });
-  process.stderr.transform(utf8.decoder).listen((data) {
-    stderrBuf.write(data);
-    if (verbose) stderr.write(data);
-  });
-
-  await process.exitCode;
-  if (!verbose && (passCount + failCount) > 0) stdout.writeln();
-
-  final report =
-      loadResults(cfg) ?? parseMachineOutput(stdoutBuf.toString(), cfg);
-  final reportPath = '$outputDir/report.md';
-  final jsonPath = '$outputDir/report.json';
-  final htmlPath = '$outputDir/report.html';
-
-  File(reportPath).writeAsStringSync(report.markdown);
-  File(jsonPath).writeAsStringSync(report.json);
-  File(htmlPath).writeAsStringSync(report.html);
-
+    if (!completed) {
+      executionErrors.add('Flutter did not complete its test run.');
+    }
+    if ((loaded == null || loaded.total == 0) && args['shards'] == null) {
+      executionErrors.add('No sweep variants completed in this run.');
+    }
+    report = mergeResults(
+      loaded?.results ?? [],
+      executionErrors: executionErrors,
+    );
+  } catch (e) {
+    report = mergeResults(
+      report.results,
+      executionErrors: [...report.executionErrors, e.toString()],
+    );
+  }
+  // Do not create a nonexistent input package just to write its error report.
+  if (Directory(dir).existsSync()) _writeReport(report, output);
   stdout.writeln(report.summary);
-  stdout.writeln();
-  stdout.writeln('Report: $htmlPath');
-  stdout.writeln('        $reportPath');
-  stdout.writeln('JSON:   $jsonPath');
-
-  if (updateGoldens) {
-    stdout.writeln();
+  for (final error in report.executionErrors) {
+    stderr.writeln('Error: $error');
+  }
+  if (updateGoldens && !shouldFail(report, {'all'})) {
     stdout.writeln(
       'Goldens updated. Commit the screenshots to use as baselines.',
     );
   }
+  return report;
+}
 
-  if (githubPr) {
-    await _postToGitHub(report);
-  }
-
-  if (!updateGoldens) {
-    final fail = shouldFail(report, failOn);
-    if (fail) exit(1);
-  }
+void _writeReport(ParsedReport report, String output) {
+  Directory(output).createSync(recursive: true);
+  File(p.join(output, 'report.md')).writeAsStringSync(report.markdown);
+  File(p.join(output, 'report.json')).writeAsStringSync(report.json);
+  File(p.join(output, 'report.html')).writeAsStringSync(report.html);
+  stdout.writeln('Report: ${p.join(output, 'report.html')}');
 }
 
 Future<void> _mergeShards(ArgResults args) async {
-  final inputDirs = args['input'] as List<String>;
-  final outputDir = args['output'] as String? ?? '.locale_sweep/reports';
-  final githubPr = args['github-pr'] as bool;
-  final failOnRaw = args['fail-on'] as String;
-  final failOn = failOnRaw.split(',').map((s) => s.trim()).toSet();
-
-  if (inputDirs.isEmpty) {
-    stderr.writeln(
-      'Error: --input is required. Provide shard output directories.',
-    );
-    stderr.writeln(
-      'Example: locale_sweep merge -i shard_0 -i shard_1 -i shard_2',
-    );
-    exit(1);
+  final failOn = _failureCategories(args);
+  final inputs = args['input'] as List<String>;
+  if (inputs.isEmpty) {
+    throw const FormatException('--input is required.');
   }
-
-  final allResults = <SweepResult>[];
-  for (final dir in inputDirs) {
-    final jsonPath = '$dir/report.json';
-    if (!File(jsonPath).existsSync()) {
-      stderr.writeln('Warning: No report.json in "$dir", skipping.');
-      continue;
-    }
+  final results = <SweepResult>[];
+  final errors = <String>[];
+  for (final dir in inputs) {
+    final file = File(p.join(dir, 'report.json'));
     try {
-      final data =
-          jsonDecode(File(jsonPath).readAsStringSync()) as Map<String, dynamic>;
-      final results = (data['results'] as List)
+      final data = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+      final shardResults = (data['results'] as List)
           .map((e) => SweepResult.fromJson(e as Map<String, dynamic>))
           .toList();
-      allResults.addAll(results);
-      stdout.writeln('  Loaded ${results.length} result(s) from $dir');
+      final shardErrors = (data['executionErrors'] as List? ?? [])
+          .cast<String>();
+      results.addAll(shardResults);
+      errors.addAll(shardErrors.map((e) => '$dir: $e'));
     } catch (e) {
-      stderr.writeln('Warning: Failed to read $jsonPath: $e');
+      errors.add('Failed to read ${file.path}: $e');
     }
   }
-
-  if (allResults.isEmpty) {
-    stderr.writeln('Error: No results found in any input directory.');
-    exit(1);
-  }
-
-  final report = mergeResults(allResults);
-  Directory(outputDir).createSync(recursive: true);
-  File('$outputDir/report.md').writeAsStringSync(report.markdown);
-  File('$outputDir/report.json').writeAsStringSync(report.json);
-  File('$outputDir/report.html').writeAsStringSync(report.html);
-
-  stdout.writeln();
-  stdout.writeln(
-    'Merged ${allResults.length} results from ${inputDirs.length} shard(s)',
-  );
+  if (results.isEmpty) errors.add('No sweep variants in the merged reports.');
+  final report = mergeResults(results, executionErrors: errors);
+  _writeReport(report, args['output'] as String? ?? '.locale_sweep/reports');
   stdout.writeln(report.summary);
-  stdout.writeln();
-  stdout.writeln('Report: $outputDir/report.html');
-  stdout.writeln('        $outputDir/report.md');
-  stdout.writeln('JSON:   $outputDir/report.json');
-
-  if (githubPr) {
-    await _postToGitHub(report);
-  }
-
-  final fail = shouldFail(report, failOn);
-  if (fail) exit(1);
+  if (args['github-pr'] as bool) await _postToGitHub(report);
+  if (shouldFail(report, failOn)) exitCode = 1;
 }
 
 void _scanPackages(ArgResults args) {
@@ -485,7 +419,10 @@ void _scanPackages(ArgResults args) {
 Future<void> _postToGitHub(ParsedReport report) async {
   try {
     final reporter = GitHubReporter.fromEnv();
-    final summary = SweepRunSummary(results: report.results);
+    final summary = SweepRunSummary(
+      results: report.results,
+      executionErrors: report.executionErrors,
+    );
     await reporter.postComment(summary);
     stdout.writeln('Posted report to PR #${reporter.prNumber}');
   } on StateError catch (e) {

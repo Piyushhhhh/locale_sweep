@@ -18,7 +18,15 @@ class ReportGenerator {
     buf.writeln('# LocaleSweep Report');
     buf.writeln();
 
-    if (summary.failed == 0) {
+    if (summary.executionErrors.isNotEmpty) {
+      buf.writeln('**Run incomplete: execution failed.**');
+      for (final error in summary.executionErrors) {
+        buf.writeln('- ${error.replaceAll('\n', ' ')}');
+      }
+      buf.writeln();
+    }
+
+    if (summary.failed == 0 && summary.executionErrors.isEmpty) {
       buf.writeln(
         '**All ${summary.total} variants passed** across ${summary.byLocale.length} locales and ${summary.byFlow.length} flows.',
       );
@@ -26,10 +34,15 @@ class ReportGenerator {
       return buf.toString();
     }
 
-    buf.writeln(
-      '**${summary.failed}/${summary.total} variants failed** across ${summary.byLocale.length} locales and ${summary.byFlow.length} flows.',
-    );
-    buf.writeln();
+    if (summary.failed > 0) {
+      buf.writeln(
+        '**${summary.failed}/${summary.total} variants failed** across ${summary.byLocale.length} locales and ${summary.byFlow.length} flows.',
+      );
+      buf.writeln();
+    } else {
+      buf.writeln('No completed variants failed.');
+      buf.writeln();
+    }
 
     if (summary.overflowCount > 0) {
       buf.writeln('- ${summary.overflowCount} overflow errors');
@@ -141,6 +154,16 @@ class ReportGenerator {
       '<p class="timestamp">Generated ${summary.timestamp.toLocal()}</p>',
     );
     buf.writeln('</header>');
+
+    if (summary.executionErrors.isNotEmpty) {
+      buf.writeln(
+        '<section class="card-issues"><h2>Run incomplete: execution failed</h2>',
+      );
+      for (final error in summary.executionErrors) {
+        buf.writeln('<p>${_htmlEscape(error)}</p>');
+      }
+      buf.writeln('</section>');
+    }
 
     // Summary cards
     buf.writeln('<section class="summary">');
@@ -641,6 +664,7 @@ document.addEventListener('DOMContentLoaded', function() {
       'failed': summary.failed,
       'overflows': summary.overflowCount,
       'arbIssues': summary.arbIssueCount,
+      'executionErrors': summary.executionErrors,
       'results': summary.results.map((r) => r.toJson()).toList(),
     };
     return const JsonEncoder.withIndent('  ').convert(data);
