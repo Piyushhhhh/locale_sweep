@@ -11,6 +11,13 @@ import 'package:locale_sweep/locale_sweep.dart';
 import 'fixtures/load_fonts.dart';
 
 void main() {
+  final goldenDir = Directory.systemTemp.createTempSync('sweep_goldens_');
+  final previousUpdateMode = autoUpdateGoldenFiles;
+  setUpAll(() => autoUpdateGoldenFiles = true);
+  tearDownAll(() {
+    autoUpdateGoldenFiles = previousUpdateMode;
+    goldenDir.deleteSync(recursive: true);
+  });
   setUpAll(() async {
     await loadTestFonts();
   });
@@ -30,7 +37,7 @@ void main() {
       textScales: [1.0],
       viewports: [ViewportPreset.phone],
       captureScreenshots: true,
-      screenshotDir: '.locale_sweep/screenshots',
+      screenshotDir: goldenDir.path,
       tolerance: 0.5,
       diffOutputDir: '.locale_sweep/diffs',
     );

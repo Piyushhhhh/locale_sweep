@@ -62,7 +62,7 @@ sweepTest(
 
 ```yaml
 dev_dependencies:
-  locale_sweep: ^0.5.0
+  locale_sweep: ^0.5.1
 ```
 
 ### 2. Write a sweep test
@@ -316,10 +316,17 @@ Three formats generated on every run:
   diffs/
     onboarding_de_393x852_diff.png
     ...
-  results/
-    onboarding.json
-    settings.json
+  runs/
+    run_.../
+      flutter.jsonl
+      stderr.log
+      results/
+        flow_.../results.json
 ```
+
+Each CLI invocation gets a separate run directory, so previous results cannot
+leak into the current report. Direct `flutter test` runs continue to write
+flow results under `.locale_sweep/results/`.
 
 ---
 
@@ -345,6 +352,10 @@ dart run locale_sweep run --fail-on all               # everything (default)
 ```
 
 Categories: `overflow`, `arb`, `golden`, `all`, `none`
+
+`--fail-on none` suppresses QA findings only. Compilation errors, broken test
+setup or callbacks, incomplete runs, and unreadable result files always return
+a non-zero exit code.
 
 ### Parallel sharding
 
@@ -458,4 +469,4 @@ Custom: `ViewportPreset(name: '1280x800', width: 1280, height: 800)`
 
 ---
 
-320 tests across 16 files. [Full changelog](CHANGELOG.md). [MIT License](https://opensource.org/licenses/MIT).
+329 tests across 17 files. [Full changelog](CHANGELOG.md). [MIT License](https://opensource.org/licenses/MIT).

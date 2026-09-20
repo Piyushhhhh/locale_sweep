@@ -156,6 +156,7 @@ void main() {
                 ]
               : [],
           errorMessage: errorMessage,
+          failureKind: errorMessage != null ? SweepFailureKind.golden : null,
         ),
       ];
       return ParsedReport(

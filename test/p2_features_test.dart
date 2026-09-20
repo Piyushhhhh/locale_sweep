@@ -8,6 +8,13 @@ import 'package:locale_sweep/src/report/github_reporter.dart';
 import 'fixtures/load_fonts.dart';
 
 void main() {
+  final goldenDir = Directory.systemTemp.createTempSync('sweep_goldens_');
+  final previousUpdateMode = autoUpdateGoldenFiles;
+  setUpAll(() => autoUpdateGoldenFiles = true);
+  tearDownAll(() {
+    autoUpdateGoldenFiles = previousUpdateMode;
+    goldenDir.deleteSync(recursive: true);
+  });
   // ── Landscape viewport presets ───────────────────────────────────────────
 
   group('Landscape viewport presets', () {
@@ -98,7 +105,7 @@ void main() {
         ViewportPreset.tabletLandscape,
       ],
       captureScreenshots: true,
-      screenshotDir: '.locale_sweep/screenshots',
+      screenshotDir: goldenDir.path,
     );
   });
 

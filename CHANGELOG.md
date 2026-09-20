@@ -1,3 +1,12 @@
+## 0.5.1
+
+- **Reliable exit codes** — ARB-only findings now mark variants as failed and respect `--fail-on`; unexpected test, setup, compilation, and result-read failures always return a non-zero exit, even with `--fail-on none`.
+- **Consistent reports** — Markdown, HTML, JSON, CLI summaries, and process exit codes now derive pass/fail state from the same result model. Reports also expose execution errors when a run is incomplete.
+- **Current-run isolation** — every CLI invocation writes to a unique results directory, so stale files cannot contaminate a later report. Duplicate flow names across test isolates are preserved, and corrupt or partial results fail visibly.
+- **Configuration propagation** — `sweepTest()` now loads the CLI-selected YAML file and environment overrides automatically. Explicit Dart arguments remain highest priority, including `screenshotDir`.
+- **Safer CLI orchestration** — single-package, monorepo, shard, merge, and golden-update paths share the same validation and failure rules. Invalid categories, shard ranges, configs, flow selections, and missing packages fail clearly.
+- 329 tests total across 17 test files.
+
 ## 0.5.0
 
 - **Localizations integration** — new `localizationsDelegates` parameter on `sweepTest()`. Wraps the widget in a `Localizations` ancestor so `AppLocalizations.of(context)` works for individual screen tests without needing a full `MaterialApp`. Fallback Material/Widgets delegates are included automatically for all locales.
