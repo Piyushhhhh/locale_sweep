@@ -193,6 +193,29 @@ Option 2 skips the `MaterialApp` overhead and tests the screen directly. LocaleS
 
 > See the [example app](https://github.com/Piyushhhhh/locale_sweep/tree/main/example) for a full `gen-l10n` setup with 8 locales and intentional bugs.
 
+### Using with slang
+
+[slang](https://pub.dev/packages/slang) uses a different file format than ARB, so the static analysis checks (missing keys, placeholders, untranslated strings) don't work against slang files directly. The runtime checks (overflow, RTL, dark mode, text scale, goldens) work out of the box since they're format-agnostic.
+
+To get static analysis, use slang's built-in ARB export as a bridge:
+
+```bash
+# Export slang translations to ARB format
+dart run slang:export --format arb --output lib/l10n/arb
+```
+
+Then point `arbDir` at the exported files:
+
+```dart
+sweepTest(
+  'settings',
+  builder: () => const SettingsScreen(),
+  arbDir: 'lib/l10n/arb',  // slang's exported ARB files
+);
+```
+
+This gives you the full static analysis (missing keys, placeholder mismatches, untranslated strings) on top of the runtime sweep. Re-export after updating translations to keep the checks in sync.
+
 ---
 
 ## Screenshot diffing
