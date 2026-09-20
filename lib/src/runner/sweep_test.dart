@@ -68,14 +68,14 @@ void sweepTest(
   String? arbDir,
   String? baseLocale,
   bool captureScreenshots = true,
-  String screenshotDir = '.locale_sweep/screenshots',
+  String? screenshotDir,
   bool Function(SweepVariant variant)? skip,
   double? tolerance,
   String diffOutputDir = '.locale_sweep/diffs',
   Future<void> Function()? setUp,
   List<LocalizationsDelegate<dynamic>>? localizationsDelegates,
 }) {
-  final cfg = config ?? const SweepConfig();
+  final cfg = config ?? SweepConfig.load();
   final effectiveLocales = locales ?? cfg.locales;
   final effectiveScales = textScales ?? cfg.textScales;
   final effectiveViewports = viewports ?? cfg.viewports;
@@ -83,6 +83,30 @@ void sweepTest(
   final effectiveArbDir = arbDir ?? cfg.arbDir;
   final effectiveTolerance = tolerance ?? cfg.tolerance;
   final effectiveBaseLocale = baseLocale ?? cfg.baseLocale;
+  final effectiveScreenshotDir = screenshotDir ?? cfg.screenshotDir;
+  final managedRun = Platform.environment['LOCALE_SWEEP_MANAGED_RUN'] == 'true';
+  final resultsPath =
+      Platform.environment['LOCALE_SWEEP_RESULTS_DIR'] ?? sweepResultsDir;
+  if (effectiveLocales.isEmpty ||
+      effectiveLocales.any((l) => l.trim().isEmpty) ||
+      effectiveScales.isEmpty ||
+      effectiveScales.any((s) => !s.isFinite || s <= 0) ||
+      effectiveViewports.isEmpty ||
+      effectiveViewports.any(
+        (v) =>
+            !v.width.isFinite ||
+            !v.height.isFinite ||
+            v.width <= 0 ||
+            v.height <= 0,
+      ) ||
+      !effectiveTolerance.isFinite ||
+      effectiveTolerance < 0 ||
+      effectiveTolerance > 100) {
+    throw ArgumentError(
+      'Invalid sweep matrix or tolerance for "$flowName". '
+      'Use nonempty locales, positive scales and viewports, and tolerance 0–100.',
+    );
+  }
 
   final darkModes = [false, if (effectiveDarkMode) true];
 
@@ -121,20 +145,26 @@ void sweepTest(
   }
 
   final flowResults = <SweepResult>[];
+  File? resultFile;
+
+  void writeResults() {
+    final dir = Directory(resultsPath)..createSync(recursive: true);
+    // Each flow registration gets its own file during managed runs, including
+    // identical flow names in different test isolates.
+    resultFile ??= managedRun
+        ? File('${dir.createTempSync('flow_').path}/results.json')
+        : File('${dir.path}/${Uri.encodeComponent(flowName)}.json');
+    resultFile!.writeAsStringSync(
+      jsonEncode(flowResults.map((r) => r.toJson()).toList()),
+    );
+  }
 
   group('sweep: $flowName', () {
     if (setUp != null) {
       setUpAll(setUp);
     }
 
-    tearDownAll(() {
-      final dir = Directory(sweepResultsDir);
-      dir.createSync(recursive: true);
-      final file = File('${dir.path}/$flowName.json');
-      file.writeAsStringSync(
-        jsonEncode(flowResults.map((r) => r.toJson()).toList()),
-      );
-    });
+    tearDownAll(writeResults);
 
     for (final variant in variants) {
       final shouldSkip = skip != null && skip(variant);
@@ -145,13 +175,19 @@ void sweepTest(
         final overflowDetector = OverflowDetector();
         String? screenshotPath;
         String? errorMessage;
+        SweepFailureKind? failureKind;
+        Object? caughtError;
+        StackTrace? caughtStack;
         var passed = true;
         final arbIssues = <ArbIssue>[];
         DiffResult? diffResult;
 
         if (arbReport != null) {
           arbIssues.addAll(
-            arbReport.issues.where((i) => i.locale == variant.locale),
+            arbReport.issues.where(
+              (i) =>
+                  i.locale == variant.locale || i.locale == effectiveBaseLocale,
+            ),
           );
         }
 
@@ -209,9 +245,12 @@ void sweepTest(
             await tester.pumpAndSettle();
           }
 
+          final frameworkError = tester.takeException();
+          if (frameworkError != null) throw frameworkError;
+
           if (captureScreenshots) {
             screenshotPath =
-                '$screenshotDir/${variant.screenshotPath(flowName)}';
+                '$effectiveScreenshotDir/${variant.screenshotPath(flowName)}';
 
             SweepGoldenComparator? sweepComparator;
             final originalComparator = goldenFileComparator;
@@ -229,6 +268,9 @@ void sweepTest(
                 find.byType(Directionality).first,
                 matchesGoldenFile(screenshotPath),
               );
+            } on TestFailure {
+              failureKind = SweepFailureKind.golden;
+              rethrow;
             } finally {
               if (sweepComparator != null) {
                 goldenFileComparator = originalComparator;
@@ -236,15 +278,18 @@ void sweepTest(
               }
             }
           }
-        } catch (e) {
+        } catch (e, stack) {
           passed = false;
           errorMessage = e.toString();
+          failureKind ??= SweepFailureKind.test;
+          caughtError = e;
+          caughtStack = stack;
         } finally {
           overflowDetector.uninstall();
           stopwatch.stop();
         }
 
-        if (overflowDetector.errors.isNotEmpty) {
+        if (overflowDetector.errors.isNotEmpty || arbIssues.isNotEmpty) {
           passed = false;
         }
 
@@ -256,17 +301,25 @@ void sweepTest(
           arbIssues: arbIssues,
           screenshotPath: screenshotPath,
           errorMessage: errorMessage,
+          failureKind: failureKind,
           duration: stopwatch.elapsed,
           diff: diffResult,
         );
 
         _allResults.add(result);
         flowResults.add(result);
+        writeResults();
 
-        if (overflowDetector.errors.isNotEmpty) {
+        if (caughtError != null &&
+            (failureKind == SweepFailureKind.test || !managedRun)) {
+          Error.throwWithStackTrace(caughtError, caughtStack!);
+        }
+        // The CLI applies --fail-on to recorded QA findings. Flutter's own
+        // exit code remains reserved for execution failures in managed runs.
+        if (!passed && !managedRun) {
           fail(
-            'Overflow detected in $flowName [${variant.displayLabel}]:\n'
-            '${overflowDetector.errors.join('\n')}',
+            'Sweep failed in $flowName [${variant.displayLabel}]:\n'
+            '${[...overflowDetector.errors, ...arbIssues].join('\n')}',
           );
         }
       });

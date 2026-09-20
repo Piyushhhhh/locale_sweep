@@ -63,7 +63,11 @@ class SweepConfig {
   ///
   /// Warns on stderr about unrecognized keys (likely typos) and type
   /// mismatches so that silent misconfiguration doesn't waste CI runs.
-  static SweepConfig load([String path = 'locale_sweep.yaml']) {
+  static SweepConfig load([String? configPath]) {
+    final path =
+        configPath ??
+        Platform.environment['LOCALE_SWEEP_CONFIG'] ??
+        'locale_sweep.yaml';
     final file = File(path);
     if (!file.existsSync()) return _applyEnvOverrides(const SweepConfig());
 

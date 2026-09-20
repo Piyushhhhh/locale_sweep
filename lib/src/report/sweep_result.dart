@@ -4,6 +4,9 @@ import '../detection/diff_result.dart';
 import '../detection/overflow_error.dart';
 import '../runner/sweep_variant.dart';
 
+/// Distinguishes golden assertions from failures executing a test.
+enum SweepFailureKind { golden, test }
+
 /// The result of running a single sweep variant.
 class SweepResult {
   /// The name of the flow that was tested.
@@ -27,6 +30,9 @@ class SweepResult {
   /// Error message if the test threw an exception.
   final String? errorMessage;
 
+  /// Category of a caught exception. Absent in reports from older versions.
+  final SweepFailureKind? failureKind;
+
   /// Wall-clock time for this variant's test.
   final Duration duration;
 
@@ -41,6 +47,7 @@ class SweepResult {
     this.arbIssues = const [],
     this.screenshotPath,
     this.errorMessage,
+    this.failureKind,
     this.duration = Duration.zero,
     this.diff,
   });
@@ -52,7 +59,14 @@ class SweepResult {
   bool get hasArbIssues => arbIssues.isNotEmpty;
 
   /// Whether this variant has any issues at all.
-  bool get hasIssues => hasOverflows || hasArbIssues || !passed;
+  bool get hasIssues =>
+      hasOverflows || hasArbIssues || !passed || errorMessage != null;
+
+  /// Unexpected failures cannot be suppressed by a QA category filter.
+  bool get hasTestFailure =>
+      failureKind == SweepFailureKind.test ||
+      (failureKind == null && errorMessage != null) ||
+      (!passed && !hasOverflows && !hasArbIssues && failureKind == null);
 
   /// Serializes this result to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
@@ -65,11 +79,12 @@ class SweepResult {
     'viewportHeight': variant.viewport.height,
     'brightness': variant.isDark ? 'dark' : 'light',
     'rtl': variant.isRtl,
-    'passed': passed,
+    'passed': !hasIssues,
     'overflows': overflows.map((e) => e.toJson()).toList(),
     'arbIssues': arbIssues.map((e) => e.toJson()).toList(),
     'screenshot': screenshotPath,
     'error': errorMessage,
+    if (failureKind != null) 'failureKind': failureKind!.name,
     'durationMs': duration.inMilliseconds,
     if (diff != null) 'diff': diff!.toJson(),
   };
@@ -96,6 +111,11 @@ class SweepResult {
         .toList(),
     screenshotPath: json['screenshot'] as String?,
     errorMessage: json['error'] as String?,
+    failureKind: switch (json['failureKind']) {
+      'golden' => SweepFailureKind.golden,
+      'test' => SweepFailureKind.test,
+      _ => null,
+    },
     duration: Duration(milliseconds: json['durationMs'] as int? ?? 0),
     diff: json['diff'] != null
         ? DiffResult.fromJson(json['diff'] as Map<String, dynamic>)
@@ -111,7 +131,11 @@ class SweepRunSummary {
   /// When this summary was created.
   final DateTime timestamp;
 
-  SweepRunSummary({required this.results}) : timestamp = DateTime.now();
+  /// Errors that prevented a complete run (compilation, setup, result IO).
+  final List<String> executionErrors;
+
+  SweepRunSummary({required this.results, this.executionErrors = const []})
+    : timestamp = DateTime.now();
 
   int get total => results.length;
   int get passed => results.where((r) => r.passed && !r.hasIssues).length;
