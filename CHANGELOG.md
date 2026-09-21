@@ -1,3 +1,7 @@
+## 0.6.1
+
+- **Truncation findings no longer fail direct tests** — truncation issues are now advisory in `flutter test` runs. They are recorded in `SweepResult` for the CLI's `--fail-on truncation` to handle, preventing unexpected test failures in existing suites after upgrading to 0.6.0.
+
 ## 0.6.0
 
 - **Text truncation detection** — after every `pumpAndSettle()`, walks the render tree to find `RenderParagraph` nodes where text is silently truncated by `ellipsis`, `clip`, or `fade` overflow modes. Reports the text, locale, overflow mode, available vs. desired width, and maxLines. Catches localization bugs that overflow detection misses — translated strings that fit the container but lose content.
