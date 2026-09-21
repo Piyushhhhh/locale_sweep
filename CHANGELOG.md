@@ -1,3 +1,10 @@
+## 0.6.0
+
+- **Text truncation detection** — after every `pumpAndSettle()`, walks the render tree to find `RenderParagraph` nodes where text is silently truncated by `ellipsis`, `clip`, or `fade` overflow modes. Reports the text, locale, overflow mode, available vs. desired width, and maxLines. Catches localization bugs that overflow detection misses — translated strings that fit the container but lose content.
+- **`--fail-on truncation`** — new category for the `--fail-on` flag. Truncation findings are included in Markdown, HTML, and JSON reports alongside overflows and ARB issues.
+- **Report improvements** — Markdown and HTML locale summary tables include a Truncations column. HTML report adds a Truncations summary card. CLI summary line includes truncation count.
+- **Backwards compatible** — `truncations` field defaults to empty; existing JSON results without it deserialize cleanly.
+
 ## 0.5.1
 
 - **Reliable exit codes** — ARB-only findings now mark variants as failed and respect `--fail-on`; unexpected test, setup, compilation, and result-read failures always return a non-zero exit, even with `--fail-on none`.

@@ -53,6 +53,7 @@ sweepTest(
 | 7 | **Accessibility scaling** | Renders at 2x text scale to catch layouts that break for large-text users |
 | 8 | **RTL layout** | Auto-detects 10 RTL locales (ar, he, fa, ur, ku, ps, yi, dv, sd, ug) including subtags |
 | 9 | **Dark mode regressions** | Tests both brightness modes with proper `Theme` wrapping |
+| 10 | **Text truncation** | Walks the render tree to find silently truncated text (ellipsis, clip, fade) — translated strings that fit the container but lose content |
 
 ---
 
@@ -62,7 +63,7 @@ sweepTest(
 
 ```yaml
 dev_dependencies:
-  locale_sweep: ^0.5.1
+  locale_sweep: ^0.6.0
 ```
 
 ### 2. Write a sweep test
@@ -374,7 +375,7 @@ dart run locale_sweep run --fail-on none              # report-only mode
 dart run locale_sweep run --fail-on all               # everything (default)
 ```
 
-Categories: `overflow`, `arb`, `golden`, `all`, `none`
+Categories: `overflow`, `arb`, `golden`, `truncation`, `all`, `none`
 
 `--fail-on none` suppresses QA findings only. Compilation errors, broken test
 setup or callbacks, incomplete runs, and unreadable result files always return

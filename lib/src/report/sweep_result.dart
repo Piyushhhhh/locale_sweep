@@ -2,6 +2,7 @@ import '../config/viewport_preset.dart';
 import '../detection/arb_analyzer.dart';
 import '../detection/diff_result.dart';
 import '../detection/overflow_error.dart';
+import '../detection/truncation_issue.dart';
 import '../runner/sweep_variant.dart';
 
 /// Distinguishes golden assertions from failures executing a test.
@@ -24,6 +25,9 @@ class SweepResult {
   /// Any ARB translation issues for this variant's locale.
   final List<ArbIssue> arbIssues;
 
+  /// Any silently truncated text elements detected after layout.
+  final List<TruncationIssue> truncations;
+
   /// Path to the golden screenshot file, if captured.
   final String? screenshotPath;
 
@@ -45,6 +49,7 @@ class SweepResult {
     required this.passed,
     this.overflows = const [],
     this.arbIssues = const [],
+    this.truncations = const [],
     this.screenshotPath,
     this.errorMessage,
     this.failureKind,
@@ -58,15 +63,26 @@ class SweepResult {
   /// Whether any ARB issues exist for this variant's locale.
   bool get hasArbIssues => arbIssues.isNotEmpty;
 
+  /// Whether any text was silently truncated.
+  bool get hasTruncations => truncations.isNotEmpty;
+
   /// Whether this variant has any issues at all.
   bool get hasIssues =>
-      hasOverflows || hasArbIssues || !passed || errorMessage != null;
+      hasOverflows ||
+      hasArbIssues ||
+      hasTruncations ||
+      !passed ||
+      errorMessage != null;
 
   /// Unexpected failures cannot be suppressed by a QA category filter.
   bool get hasTestFailure =>
       failureKind == SweepFailureKind.test ||
       (failureKind == null && errorMessage != null) ||
-      (!passed && !hasOverflows && !hasArbIssues && failureKind == null);
+      (!passed &&
+          !hasOverflows &&
+          !hasArbIssues &&
+          !hasTruncations &&
+          failureKind == null);
 
   /// Serializes this result to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
@@ -82,6 +98,7 @@ class SweepResult {
     'passed': !hasIssues,
     'overflows': overflows.map((e) => e.toJson()).toList(),
     'arbIssues': arbIssues.map((e) => e.toJson()).toList(),
+    'truncations': truncations.map((e) => e.toJson()).toList(),
     'screenshot': screenshotPath,
     'error': errorMessage,
     if (failureKind != null) 'failureKind': failureKind!.name,
@@ -109,6 +126,11 @@ class SweepResult {
     arbIssues: (json['arbIssues'] as List)
         .map((e) => ArbIssue.fromJson(e as Map<String, dynamic>))
         .toList(),
+    truncations:
+        (json['truncations'] as List?)
+            ?.map((e) => TruncationIssue.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [],
     screenshotPath: json['screenshot'] as String?,
     errorMessage: json['error'] as String?,
     failureKind: switch (json['failureKind']) {
@@ -144,6 +166,8 @@ class SweepRunSummary {
       results.fold(0, (sum, r) => sum + r.overflows.length);
   int get arbIssueCount =>
       results.fold(0, (sum, r) => sum + r.arbIssues.length);
+  int get truncationCount =>
+      results.fold(0, (sum, r) => sum + r.truncations.length);
 
   List<SweepResult> get failures => results.where((r) => r.hasIssues).toList();
 
