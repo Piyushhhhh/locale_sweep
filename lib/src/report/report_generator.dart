@@ -50,6 +50,9 @@ class ReportGenerator {
     if (summary.arbIssueCount > 0) {
       buf.writeln('- ${summary.arbIssueCount} ARB translation issues');
     }
+    if (summary.truncationCount > 0) {
+      buf.writeln('- ${summary.truncationCount} text truncations');
+    }
     buf.writeln();
 
     buf.writeln('## Failures');
@@ -79,6 +82,9 @@ class ReportGenerator {
         for (final a in r.arbIssues) {
           issues.add('${a.type.name}: ${a.key ?? a.detail}');
         }
+        for (final t in r.truncations) {
+          issues.add(t.toString());
+        }
         if (r.errorMessage != null) {
           final msg = r.errorMessage!.length > 80
               ? '${r.errorMessage!.substring(0, 80)}...'
@@ -105,8 +111,12 @@ class ReportGenerator {
 
     buf.writeln('## Locale Summary');
     buf.writeln();
-    buf.writeln('| Locale | Passed | Failed | Overflows | ARB Issues |');
-    buf.writeln('|--------|--------|--------|-----------|------------|');
+    buf.writeln(
+      '| Locale | Passed | Failed | Overflows | ARB Issues | Truncations |',
+    );
+    buf.writeln(
+      '|--------|--------|--------|-----------|------------|-------------|',
+    );
 
     for (final entry in summary.byLocale.entries) {
       final results = entry.value;
@@ -114,7 +124,8 @@ class ReportGenerator {
       final f = results.length - p;
       final o = results.fold(0, (sum, r) => sum + r.overflows.length);
       final a = results.fold(0, (sum, r) => sum + r.arbIssues.length);
-      buf.writeln('| ${entry.key} | $p | $f | $o | $a |');
+      final t = results.fold(0, (sum, r) => sum + r.truncations.length);
+      buf.writeln('| ${entry.key} | $p | $f | $o | $a | $t |');
     }
     buf.writeln();
 
@@ -172,6 +183,7 @@ class ReportGenerator {
     _htmlSummaryCard(buf, '${summary.failed}', 'Failed', 'fail');
     _htmlSummaryCard(buf, '${summary.overflowCount}', 'Overflows', 'warn');
     _htmlSummaryCard(buf, '${summary.arbIssueCount}', 'ARB Issues', 'warn');
+    _htmlSummaryCard(buf, '${summary.truncationCount}', 'Truncations', 'warn');
     buf.writeln('</section>');
 
     // Filters
@@ -286,6 +298,11 @@ class ReportGenerator {
               '<div class="issue arb">${_htmlEscape(a.type.name)}: ${_htmlEscape(a.key ?? a.detail)}</div>',
             );
           }
+          for (final t in r.truncations) {
+            buf.writeln(
+              '<div class="issue truncation">${_htmlEscape(t.toString())}</div>',
+            );
+          }
           if (r.errorMessage != null) {
             final msg = r.errorMessage!.length > 120
                 ? '${r.errorMessage!.substring(0, 120)}...'
@@ -321,7 +338,7 @@ class ReportGenerator {
     buf.writeln('<h2>Locale Summary</h2>');
     buf.writeln('<table>');
     buf.writeln(
-      '<thead><tr><th>Locale</th><th>Passed</th><th>Failed</th><th>Overflows</th><th>ARB Issues</th></tr></thead>',
+      '<thead><tr><th>Locale</th><th>Passed</th><th>Failed</th><th>Overflows</th><th>ARB Issues</th><th>Truncations</th></tr></thead>',
     );
     buf.writeln('<tbody>');
     for (final entry in summary.byLocale.entries) {
@@ -330,9 +347,10 @@ class ReportGenerator {
       final f = results.length - p;
       final o = results.fold(0, (sum, r) => sum + r.overflows.length);
       final a = results.fold(0, (sum, r) => sum + r.arbIssues.length);
+      final t = results.fold(0, (sum, r) => sum + r.truncations.length);
       final rowClass = f > 0 ? ' class="row-fail"' : '';
       buf.writeln(
-        '<tr$rowClass><td>${entry.key.toUpperCase()}</td><td>$p</td><td>$f</td><td>$o</td><td>$a</td></tr>',
+        '<tr$rowClass><td>${entry.key.toUpperCase()}</td><td>$p</td><td>$f</td><td>$o</td><td>$a</td><td>$t</td></tr>',
       );
     }
     buf.writeln('</tbody></table>');
@@ -564,6 +582,7 @@ h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--tex
 
 .issue.overflow { background: var(--fail-bg); color: var(--fail); }
 .issue.arb { background: var(--warn-bg); color: var(--warn); }
+.issue.truncation { background: var(--warn-bg); color: var(--warn); }
 .issue.error { background: var(--fail-bg); color: var(--fail); }
 
 .locale-table {
@@ -664,6 +683,7 @@ document.addEventListener('DOMContentLoaded', function() {
       'failed': summary.failed,
       'overflows': summary.overflowCount,
       'arbIssues': summary.arbIssueCount,
+      'truncations': summary.truncationCount,
       'executionErrors': summary.executionErrors,
       'results': summary.results.map((r) => r.toJson()).toList(),
     };

@@ -10,6 +10,7 @@ import '../config/viewport_preset.dart';
 import '../detection/arb_analyzer.dart';
 import '../detection/golden_diff.dart';
 import '../detection/overflow_detector.dart';
+import '../detection/truncation_detector.dart';
 import '../report/sweep_result.dart';
 import 'sweep_variant.dart';
 
@@ -180,6 +181,7 @@ void sweepTest(
         StackTrace? caughtStack;
         var passed = true;
         final arbIssues = <ArbIssue>[];
+        var truncations = <TruncationIssue>[];
         DiffResult? diffResult;
 
         if (arbReport != null) {
@@ -245,6 +247,8 @@ void sweepTest(
             await tester.pumpAndSettle();
           }
 
+          truncations = TruncationDetector.detect(tester, variant.locale);
+
           final frameworkError = tester.takeException();
           if (frameworkError != null) throw frameworkError;
 
@@ -289,7 +293,9 @@ void sweepTest(
           stopwatch.stop();
         }
 
-        if (overflowDetector.errors.isNotEmpty || arbIssues.isNotEmpty) {
+        if (overflowDetector.errors.isNotEmpty ||
+            arbIssues.isNotEmpty ||
+            truncations.isNotEmpty) {
           passed = false;
         }
 
@@ -299,6 +305,7 @@ void sweepTest(
           passed: passed,
           overflows: List.of(overflowDetector.errors),
           arbIssues: arbIssues,
+          truncations: truncations,
           screenshotPath: screenshotPath,
           errorMessage: errorMessage,
           failureKind: failureKind,
@@ -319,7 +326,7 @@ void sweepTest(
         if (!passed && !managedRun) {
           fail(
             'Sweep failed in $flowName [${variant.displayLabel}]:\n'
-            '${[...overflowDetector.errors, ...arbIssues].join('\n')}',
+            '${[...overflowDetector.errors, ...arbIssues, ...truncations].join('\n')}',
           );
         }
       });

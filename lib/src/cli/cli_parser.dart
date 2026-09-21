@@ -45,6 +45,7 @@ bool shouldFail(ParsedReport report, Set<String> failOn) {
     if (failOn.contains('golden') && r.failureKind == SweepFailureKind.golden) {
       return true;
     }
+    if (failOn.contains('truncation') && r.hasTruncations) return true;
   }
   return false;
 }
@@ -223,6 +224,10 @@ ParsedReport _buildReport(
     0,
     (sum, r) => sum + r.arbIssues.length,
   );
+  final truncationCount = sweepResults.fold<int>(
+    0,
+    (sum, r) => sum + r.truncations.length,
+  );
 
   final parts = <String>[];
   if (executionErrors.isNotEmpty) {
@@ -231,6 +236,7 @@ ParsedReport _buildReport(
   if (failed > 0) parts.add('$failed/$total variants failed');
   if (overflowCount > 0) parts.add('$overflowCount overflow(s)');
   if (arbCount > 0) parts.add('$arbCount ARB issue(s)');
+  if (truncationCount > 0) parts.add('$truncationCount truncation(s)');
   final summary = parts.isEmpty
       ? 'All $total variants passed.'
       : parts.join(', ');
