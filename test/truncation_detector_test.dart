@@ -8,7 +8,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        Directionality(
+        const Directionality(
           textDirection: TextDirection.ltr,
           child: Center(
             child: SizedBox(
@@ -37,7 +37,7 @@ void main() {
 
     testWidgets('detects clip overflow', (tester) async {
       await tester.pumpWidget(
-        Directionality(
+        const Directionality(
           textDirection: TextDirection.ltr,
           child: Center(
             child: SizedBox(
@@ -61,7 +61,7 @@ void main() {
 
     testWidgets('detects fade overflow', (tester) async {
       await tester.pumpWidget(
-        Directionality(
+        const Directionality(
           textDirection: TextDirection.ltr,
           child: Center(
             child: SizedBox(
@@ -85,7 +85,7 @@ void main() {
 
     testWidgets('ignores visible overflow', (tester) async {
       await tester.pumpWidget(
-        Directionality(
+        const Directionality(
           textDirection: TextDirection.ltr,
           child: Center(
             child: SizedBox(
@@ -106,7 +106,7 @@ void main() {
 
     testWidgets('ignores text that fits', (tester) async {
       await tester.pumpWidget(
-        Directionality(
+        const Directionality(
           textDirection: TextDirection.ltr,
           child: Center(
             child: SizedBox(
@@ -128,7 +128,7 @@ void main() {
 
     testWidgets('detects maxLines exceeded', (tester) async {
       await tester.pumpWidget(
-        Directionality(
+        const Directionality(
           textDirection: TextDirection.ltr,
           child: Center(
             child: SizedBox(
@@ -151,7 +151,7 @@ void main() {
 
     testWidgets('ignores empty text', (tester) async {
       await tester.pumpWidget(
-        Directionality(
+        const Directionality(
           textDirection: TextDirection.ltr,
           child: Center(
             child: SizedBox(
@@ -170,7 +170,7 @@ void main() {
 
   group('TruncationIssue', () {
     test('toJson and fromJson roundtrip', () {
-      final issue = TruncationIssue(
+      const issue = TruncationIssue(
         text: 'Einstellungen',
         locale: 'de',
         overflowMode: 'ellipsis',
@@ -191,7 +191,7 @@ void main() {
     });
 
     test('toJson omits null maxLines', () {
-      final issue = TruncationIssue(
+      const issue = TruncationIssue(
         text: 'Hello',
         locale: 'en',
         overflowMode: 'clip',
@@ -204,7 +204,7 @@ void main() {
     });
 
     test('toString shows truncation details', () {
-      final issue = TruncationIssue(
+      const issue = TruncationIssue(
         text: 'Einstellungen',
         locale: 'de',
         overflowMode: 'ellipsis',
@@ -234,9 +234,9 @@ void main() {
 
   group('SweepResult with truncations', () {
     test('hasTruncations reflects list state', () {
-      final result = SweepResult(
+      const result = SweepResult(
         flowName: 'test',
-        variant: const SweepVariant(
+        variant: SweepVariant(
           locale: 'de',
           textScale: 1.0,
           viewport: ViewportPreset.phone,
@@ -258,9 +258,9 @@ void main() {
     });
 
     test('truncations included in toJson', () {
-      final result = SweepResult(
+      const result = SweepResult(
         flowName: 'test',
-        variant: const SweepVariant(
+        variant: SweepVariant(
           locale: 'en',
           textScale: 1.0,
           viewport: ViewportPreset.phone,
@@ -307,14 +307,14 @@ void main() {
 
   group('shouldFail with truncation', () {
     test('fails on truncation when fail-on includes truncation', () {
-      final result = SweepResult(
+      const result = SweepResult(
         flowName: 'test',
-        variant: const SweepVariant(
+        variant: SweepVariant(
           locale: 'de',
           textScale: 2.0,
           viewport: ViewportPreset.phone,
         ),
-        passed: false,
+        passed: true,
         truncations: [
           TruncationIssue(
             text: 'Einstellungen',

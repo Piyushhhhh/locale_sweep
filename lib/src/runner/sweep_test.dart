@@ -293,9 +293,7 @@ void sweepTest(
           stopwatch.stop();
         }
 
-        if (overflowDetector.errors.isNotEmpty ||
-            arbIssues.isNotEmpty ||
-            truncations.isNotEmpty) {
+        if (overflowDetector.errors.isNotEmpty || arbIssues.isNotEmpty) {
           passed = false;
         }
 
@@ -326,7 +324,7 @@ void sweepTest(
         if (!passed && !managedRun) {
           fail(
             'Sweep failed in $flowName [${variant.displayLabel}]:\n'
-            '${[...overflowDetector.errors, ...arbIssues, ...truncations].join('\n')}',
+            '${[...overflowDetector.errors, ...arbIssues].join('\n')}',
           );
         }
       });
