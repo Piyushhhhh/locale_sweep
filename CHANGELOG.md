@@ -1,3 +1,14 @@
+## 0.8.1
+
+- **The pub.dev Example tab shows how to use LocaleSweep.** It used to show
+  the demo app's `main.dart`; `example/README.md` now leads with a real sweep
+  test, how to run it, and the bugs the example app contains.
+- **An invalid `--timeout` fails before `flutter test` starts**, instead of
+  after the test process was already launched.
+- **`SweepResult.copyWith` keeps `actualScreenshotPath`** when it is not
+  passed, so moving only the golden path no longer drops the failure
+  screenshot.
+
 ## 0.8.0
 
 **Upgrade notes** — these changes can alter results on existing projects:

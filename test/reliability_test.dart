@@ -275,6 +275,20 @@ void main() {
       }
     }, timeout: const Timeout(Duration(minutes: 3)));
 
+    test('an invalid --timeout fails before flutter test starts', () async {
+      await prepareFakePackage(temporary.path);
+      for (final value in ['abc', '0', '-5']) {
+        final run = await cli(['run', '--timeout', value]);
+        expect(run.exitCode, isNot(0), reason: value);
+        expect(run.stderr, contains('--timeout'), reason: value);
+        expect(run.stdout, isNot(contains('Running checks')), reason: value);
+      }
+      expect(
+        Directory(p.join(temporary.path, '.locale_sweep/runs')).existsSync(),
+        isFalse,
+      );
+    }, timeout: const Timeout(Duration(minutes: 3)));
+
     test(
       'empty successful shards are allowed but an empty merged run fails',
       () async {

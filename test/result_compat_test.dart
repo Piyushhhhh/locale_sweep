@@ -123,4 +123,27 @@ void main() {
       expect(selection.namePattern, isNotNull);
     });
   });
+
+  group('SweepResult.copyWith', () {
+    test('keeps the actual screenshot and diff when only the golden moves', () {
+      const result = SweepResult(
+        flowName: 'home',
+        variant: SweepVariant(
+          locale: 'de',
+          textScale: 1.0,
+          viewport: ViewportPreset.phone,
+        ),
+        passed: false,
+        screenshotPath: 'test/sweep/.locale_sweep/screenshots/home.png',
+        actualScreenshotPath: '.locale_sweep/actual/home.png',
+        diff: DiffResult(diffPercent: 2.5, changedPixels: 10, totalPixels: 400),
+      );
+
+      final moved = result.copyWith(screenshotPath: 'apps/a/home.png');
+
+      expect(moved.screenshotPath, 'apps/a/home.png');
+      expect(moved.actualScreenshotPath, '.locale_sweep/actual/home.png');
+      expect(moved.diff?.diffPercent, 2.5);
+    });
+  });
 }

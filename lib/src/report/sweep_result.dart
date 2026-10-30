@@ -84,7 +84,7 @@ class SweepResult {
     truncations: truncations,
     hardcodedTexts: hardcodedTexts,
     screenshotPath: screenshotPath ?? this.screenshotPath,
-    actualScreenshotPath: actualScreenshotPath,
+    actualScreenshotPath: actualScreenshotPath ?? this.actualScreenshotPath,
     errorMessage: errorMessage,
     failureKind: failureKind,
     duration: duration,

@@ -166,6 +166,7 @@ Set<String> _failureCategories(ArgResults args) {
 
 Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
   final failOn = _failureCategories(args);
+  final timeout = _runTimeout(args);
   final shards = int.tryParse(args['shards'] as String? ?? '1');
   final shardIndex = int.tryParse(args['shard-index'] as String? ?? '0');
   if (shards == null ||
@@ -193,6 +194,7 @@ Future<void> _runSweep(ArgResults args, {required bool updateGoldens}) async {
       absoluteDir,
       args,
       updateGoldens: updateGoldens,
+      timeout: timeout,
     );
     singleReport = report;
     // Results carry screenshot paths relative to their package directory.
@@ -224,6 +226,7 @@ Future<ParsedReport> _runInDirectory(
   String dir,
   ArgResults args, {
   required bool updateGoldens,
+  required Duration? timeout,
 }) async {
   final configArgument = args['config'] as String;
   final configPath = p.normalize(
@@ -348,7 +351,6 @@ Future<ParsedReport> _runInDirectory(
       if (verbose) stderr.write(data);
     });
     // A hung golden wait or font download used to block the CLI forever.
-    final timeout = _runTimeout(args);
     final exit = await _waitForExit(process, timeout);
     final code = exit.code;
     await Future.wait([stdoutDone, stderrDone]);
