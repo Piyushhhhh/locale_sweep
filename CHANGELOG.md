@@ -1,3 +1,10 @@
+## 0.8.2
+
+- **The pub.dev Example tab now shows the sweep example.** 0.8.1 added it as
+  `example/README.md`, but pub.dev shows `example/lib/main.dart` ahead of that
+  file, so the tab still showed the demo app. The example now lives in
+  `example/example.md`, which pub.dev shows first.
+
 ## 0.8.1
 
 - **The pub.dev Example tab shows how to use LocaleSweep.** It used to show
